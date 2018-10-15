@@ -46,10 +46,10 @@ ws.onmessage = function(e) {
         //Only show grids within viewing range
         player.currentGrid = Math.floor(player.x/100) + Math.floor(player.y/100)*gridRowLength;
 
-        var viewStartGrid = player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength-1 >= 0 ? player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength-1 : 0;
+        var viewStartGrid = player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 >= 0 ? player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 : 0;
         var viewEndGrid = player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 < grids.length ? player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 : grids.length;
 
-        console.log(viewEndGrid);
+        console.log(player.currentGrid + ' ' + viewStartGrid);
 
         for (var i=viewStartGrid; i<viewEndGrid; i++) {
             try {
