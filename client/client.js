@@ -17,6 +17,15 @@ var keyStates = [];
 var player;
 var grids = [];
 var gridRowLength;
+var boostReady = document.getElementById('boost');
+
+var images = [new Image(), new Image()];
+
+images[0].src = "images/stone.jpg";
+images[1].src = "images/wall.jpg";
+
+
+
 
 
 
@@ -49,16 +58,14 @@ ws.onmessage = function(e) {
         var viewStartGrid = player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 >= 0 ? player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 : 0;
         var viewEndGrid = player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 < grids.length ? player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 : grids.length;
 
-        console.log(player.currentGrid + ' ' + viewStartGrid);
-
         for (var i=viewStartGrid; i<viewEndGrid; i++) {
-            try {
+            try { 
                 if (Math.abs(grids[player.currentGrid].x-grids[i].x) < canvas.width/2+100 && Math.abs(grids[player.currentGrid].y-grids[i].y) < canvas.height/2+100 && grids[i].type > 0) {
                     grids[i].type > 0 ? drawGrids(grids[i].x, grids[i].y, grids[i].type) : 0;
                 }
             }
             catch(e) {
-                // console.log(i);
+                console.log(e);
             }
         }
     }
@@ -105,7 +112,6 @@ var player = {
 
 
 
-
 ctx.lineWidth = 1;
 
 function draw(x, y, color) {
@@ -117,12 +123,16 @@ function draw(x, y, color) {
 
 function drawGrids(x, y, type) {
     //Wall
+    // ctx.beginPath();
+    // ctx.rect(x+5, y+5, 90, 90);
+    // ctx.fillStyle = 'rgba(0,0,0,.75)';
+    // ctx.fill();
     if (type == 1) {
-        ctx.beginPath();
-        ctx.rect(x+5, y+5, 90, 90);
-        ctx.fillStyle = 'rgba(0,0,0,.75)';
-        ctx.fill();
-    }
+		ctx.drawImage(images[type-1], x+10, y+10, 80, 80);
+	}
+	else if (type == 2) {
+		ctx.drawImage(images[type-1], x, y, 100, 100);
+	}
 }
 
 
@@ -147,6 +157,22 @@ window.addEventListener('keydown', function(e) {
         id: player.id
     }));
 
+    if (e.keyCode == 32) {
+    	if (boostReady.offsetWidth == 400) {
+		    ws.send(JSON.stringify({
+		        type: 'boost',
+		        id: player.id
+		    }));
+
+			//Reset boost animation
+			boostReady.style.animation = 'none';
+			boostReady.offsetHeight; /* trigger reflow */
+			boostReady.style.animation = null; 
+		}
+		else {
+			console.log(boostReady.offsetWidth);
+		}
+    }
 });
 
 window.addEventListener('keyup', function(e) {
@@ -162,3 +188,8 @@ window.addEventListener('keyup', function(e) {
         id: player.id
     }));
 });
+
+
+
+
+
