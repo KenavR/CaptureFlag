@@ -19,12 +19,13 @@ var grids = [];
 var gridRowLength;
 var boostReady = document.getElementById('boost');
 
-var images = [new Image(), new Image(), new Image(), new Image()];
+var images = [new Image(), new Image(), new Image(), new Image(), new Image()];
 
 images[0].src = "images/stone.jpg";
 images[1].src = "images/wall.jpg";
 images[2].src = "images/background.png";
-images[3].src = "images/flag.png";
+images[3].src = "images/spike.png";
+images[4].src = "images/flag.png";
 
 
 
@@ -138,7 +139,7 @@ function draw(x, y, color, flag) {
     ctx.fillStyle = color;
     ctx.fill();
 
-    flag ? ctx.drawImage(images[3], x-15, y-20, 30, 40) : 0;
+    flag ? ctx.drawImage(images[4], x-15, y-20, 30, 40) : 0;
 }
 
 function drawGrids(x, y, type, flag) {
@@ -157,9 +158,12 @@ function drawGrids(x, y, type, flag) {
         ctx.fillStyle = x > grids[Math.round(gridRowLength/2)].x ? 'rgba(255,0,0,.25)' : 'rgba(0,0,255,.25)';
         ctx.fill();
     }
+    else if (type == 4) {
+        ctx.drawImage(images[type-1], x+15, y+15, 70, 70);
+    }
 
     //Flag
-    flag ? ctx.drawImage(images[3], x+35, y+30, 30, 40) : 0;
+    flag ? ctx.drawImage(images[4], x+35, y+30, 30, 40) : 0;
 }
 
 function drawBackground() {
@@ -209,7 +213,7 @@ window.addEventListener('keydown', function(e) {
 
             setTimeout(function() {
                 player.boostReady = true;
-            },10000);
+            },100);
 		}
     }
 });

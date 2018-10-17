@@ -19,41 +19,44 @@ var grids = [];
 //1 = wall 
 //2 = edge wall
 //3 = team flag spawn
+//4 = spike
 //8 = red team spawn points
 //9 = blue team spawn points
 var map1 = [
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,0,8,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,8,0,8,0,2,2, 
-	2,2,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,8,0,3,0,8,2,2, 
-	2,2,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,8,0,8,0,2,2, 
-	2,2,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,8,0,8,2,2, 
-	2,2,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,2,2, 
-	2,2,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,2,2, 
-	2,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,2,2, 
-	2,2,9,0,9,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,2,2, 
-	2,2,0,9,0,9,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,2,2, 
-	2,2,9,0,3,0,9,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,2,2, 
-	2,2,0,9,0,9,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,9,0,9,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2, 
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+	4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4, 
+	4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4, 
+	4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,0,8,2,4, 
+	4,2,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,1,0,8,0,8,0,2,4, 
+	4,2,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,8,0,3,0,8,2,4, 
+	4,2,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,8,0,8,0,2,4, 
+	4,2,0,4,0,0,1,0,0,0,0,0,4,0,0,0,0,0,4,1,8,0,8,2,4, 
+	4,2,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,2,4, 
+	4,2,0,0,0,4,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,4, 
+	4,2,0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,4,0,0,2,4, 
+	4,2,0,0,0,0,0,4,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,2,4, 
+	4,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,2,4, 
+	4,2,0,0,0,0,0,0,0,0,1,4,0,4,1,0,0,0,0,0,0,0,0,2,4, 
+	4,2,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2,4, 
+	4,2,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,4,0,0,0,0,0,2,4, 
+	4,2,0,0,4,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,2,4, 
+	4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,4,0,0,0,2,4, 
+	4,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,2,4, 
+	4,2,9,0,9,1,4,0,0,0,0,0,4,0,0,0,0,0,1,0,0,4,0,2,4, 
+	4,2,0,9,0,9,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,2,4, 
+	4,2,9,0,3,0,9,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,2,4, 
+	4,2,0,9,0,9,0,1,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,2,4, 
+	4,2,9,0,9,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,4, 
+	4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,
+	4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
 ];
+var redFlagSpawn = map1.indexOf(3);
+var blueFlagSpawn = map1.indexOf(3, redFlagSpawn+1);
 
 var gridRowLength = 25;
 //Create 50x50 grid map
 for (var i=0; i<gridRowLength; i++) {
 	for (var j=0; j<gridRowLength; j++) {
-		grids.push(new Grid(j*100, i*100, map1[i+j*gridRowLength]));
+		grids.push(new Grid(j*100, i*100, map1[j+i*gridRowLength]));
 	}
 }
 
@@ -77,6 +80,7 @@ websocketServer.on('connection', (ws) => {
     	for (var i=0; i<players.length; i++) {
     		if (players[i].ws == ws) {
     			console.log('closing: ' + i);
+    			players[i].reset();
     			players.splice(i, 1);
     			return;
     		}
@@ -86,6 +90,7 @@ websocketServer.on('connection', (ws) => {
     	for (var i=0; i<players.length; i++) {
     		if (players[i].ws == ws) {
     			console.log('ERRORR: ' + i);
+    			players[i].reset();
     			players.splice(i, 1);
     			return;
     		}
@@ -171,6 +176,7 @@ setInterval(function() {
 		    }
 		    else {
 		    	console.log('setInterval delete 1 player jasljdajlksfjlkafjlkajlkfjlkfjlkasljkfljskfljkfljkasjkfjlafjlkaf');
+    			players[i].reset();
 		    	players.splice(i, 1);
 		    }
 		}
@@ -231,23 +237,35 @@ Player.prototype.update = function() {
 
 Player.prototype.reset = function() {
 	try {
-	var spawnPoints = [];
+		var spawnPoints = [];
 
-	for (var i=0; i<map1.length; i++) {
-		if (map1[i] == 8 && this.team == 0) {
-			spawnPoints.push(i);
+		//Get spot to spawn
+		for (var i=0; i<map1.length; i++) {
+			if (map1[i] == 9 && this.team == 0) {
+				spawnPoints.push(i);
+			}
+			else if (map1[i] == 9 && this.team == 1) {
+				spawnPoints.push(i);
+			}
 		}
-		else if (map1[i] == 9 && this.team == 1) {
-			spawnPoints.push(i);
-		}
-	}
-	var spawn = Math.round(Math.random()*spawnPoints.length);
-	var test = grids[spawnPoints[spawn]];
 
-	this.x = test.x + 50;
-	this.y = test.y + 50;
-	this.velX = 0;
-	this.velY = 0;
+		if (this.hasFlag) {
+			this.hasFlag = 0;
+			if (!this.team) {
+				grids[blueFlagSpawn].flagMessage(1);
+				grids[blueFlagSpawn].flag = 1;
+			}
+			else {
+				grids[redFlagSpawn].flagMessage(1);
+				grids[redFlagSpawn].flag = 1;
+			}
+		}
+
+		var spawn = Math.round(Math.random()*spawnPoints.length);
+		this.x = grids[spawnPoints[spawn]].x + 50;
+		this.y = grids[spawnPoints[spawn]].y + 50;
+		this.velX = 0;
+		this.velY = 0;
 	}
 	catch (e) {
 		console.log('resetting error, trying again');
@@ -265,57 +283,50 @@ Player.prototype.collision = function() {
 							currentGrid+gridRowLength-1, currentGrid+gridRowLength, currentGrid+gridRowLength+1];
 
 		for (var i=0; i<collideGrids.length; i++) {
-			if (grids[collideGrids[i]].type > 0 && grids[collideGrids[i]].type < 8) {
+			//Circle to rect collision
+			if (grids[collideGrids[i]].type == 1 || grids[collideGrids[i]].type == 2) {
 				var collide = circRectCollision(this, grids[collideGrids[i]]);
 
 				if (collide == 'X') {
-					if (grids[collideGrids[i]].type <= 2) {
-						var xLeftWall = this.x-grids[collideGrids[i]].x;
-						var xRightWall = grids[collideGrids[i]].x+100-this.x;
-						xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
-					}
-					//Hit left/right wall of flag spawn
-					else if (grids[collideGrids[i]].type == 3) {
-						grids[collideGrids[i]].flagCapture(this);
-					}
-
+					var xLeftWall = this.x-grids[collideGrids[i]].x;
+					var xRightWall = grids[collideGrids[i]].x+100-this.x;
+					xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
 					break;
 				}
 				else if (collide == 'Y') {
-					if (grids[collideGrids[i]].type <= 2) {
-						var yTopWall = this.y-grids[collideGrids[i]].y;
-						var yBottomWall = grids[collideGrids[i]].y+100-this.y;
-						yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
-					}
-					//Hit top/bottom wall of flag spawn
-					else if (grids[collideGrids[i]].type == 3) {
-						grids[collideGrids[i]].flagCapture(this);
-					}
-
+					var yTopWall = this.y-grids[collideGrids[i]].y;
+					var yBottomWall = grids[collideGrids[i]].y+100-this.y;
+					yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
 					break;
 				}
 				else if (collide == true) {
-					if (grids[collideGrids[i]].type <= 2) {
-						console.log('corner');
-						var xLeftWall = this.x-grids[collideGrids[i]].x;
-						var xRightWall = grids[collideGrids[i]].x+100-this.x;
+					var xLeftWall = this.x-grids[collideGrids[i]].x;
+					var xRightWall = grids[collideGrids[i]].x+100-this.x;
 
-						var yTopWall = this.y-grids[collideGrids[i]].y;
-						var yBottomWall = grids[collideGrids[i]].y+100-this.y;
+					var yTopWall = this.y-grids[collideGrids[i]].y;
+					var yBottomWall = grids[collideGrids[i]].y+100-this.y;
 
-						if (Math.min(xLeftWall, xRightWall) < Math.min(yTopWall, yBottomWall)) {
-							xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
-						}
-						else if (Math.min(xLeftWall, xRightWall) > Math.min(yTopWall, yBottomWall)) {
-							yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
-						}
+					if (Math.min(xLeftWall, xRightWall) < Math.min(yTopWall, yBottomWall)) {
+						xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
 					}
-					//Hit corner of flag spawn
-					else if (grids[collideGrids[i]].type == 3) {
+					else if (Math.min(xLeftWall, xRightWall) > Math.min(yTopWall, yBottomWall)) {
+						yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
+					}
+					break;
+				}
+			}
+			//Circle to circle collision
+			else if (grids[collideGrids[i]].type == 3 || grids[collideGrids[i]].type == 4) {
+
+				var dist = Math.hypot(grids[collideGrids[i]].x+50-this.x, grids[collideGrids[i]].y+50-this.y);
+
+				if (dist < 60) {
+					if (grids[collideGrids[i]].type == 3) {
 						grids[collideGrids[i]].flagCapture(this);
 					}
-
-					break;
+					else if (grids[collideGrids[i]].type == 4) {
+						this.reset();
+					}
 				}
 			}
 		}
@@ -333,7 +344,7 @@ Player.prototype.collision = function() {
 					this.reset();
 				}
 			}
-		}
+	}
 	}
 	catch (e) {
 		this.reset();
@@ -445,45 +456,48 @@ function Grid(x, y, type) {
 	this.type = type;
 	this.type == 3 ? this.flag = 1 : 0;
 }
-Grid.prototype.flagCapture = function(player, index) {
-	//Blue hits red flag spawn
+Grid.prototype.flagCapture = function(player) {
+	//Blue captures red's flag
 	if (this.x > grids[Math.round(gridRowLength/2)].x && player.team) {
 		for (var i=0; i<players.length; i++) {
 			if (players[i].team && players[i].hasFlag) {break};
 		}
-
 		player.hasFlag = true;
-		this.flag = 0;
-		this.flagMessage(0);
+		if (this.flag) {
+			this.flag = 0;
+			this.flagMessage(0);
+		}
 	}
-	//Red hits blue flag spawn
+	//Red captures blue's flag
 	else if (this.x < grids[Math.round(gridRowLength/2)].x && !player.team) {
 		for (var i=0; i<players.length; i++) {
 			if (!players[i].team && players[i].hasFlag) {break};
 		}
 		player.hasFlag = true;
-		this.flag = 0;
-		this.flagMessage(0);
+		if (this.flag) {
+			this.flagMessage(0);
+			this.flag = 0;
+		}
 	}
-	//Red hits red flag spawn
+	//Blue returns red's flag to base
 	else if (this.x < grids[Math.round(gridRowLength/2)].x && player.team) {
 		if (player.hasFlag) {
 			player.hasFlag = 0;
-			this.flag = 1;
-			this.flagMessage(1);
+			grids[redFlagSpawn].flag = 1;
+			grids[redFlagSpawn].flagMessage(1);
 		}
 	}
+	//Red returns blue's flag to base
 	else if (this.x > grids[Math.round(gridRowLength/2)].x && !player.team) {
 		if (player.hasFlag) {
 			player.hasFlag = 0;
-			this.flag = 1;
-			this.flagMessage(1);
+			grids[blueFlagSpawn].flag = 1;
+			grids[blueFlagSpawn].flagMessage(1);
 		}
 	}
 }
 Grid.prototype.flagMessage = function(flag) {
 	var currentGrid = Math.floor(this.x/100) + Math.floor(this.y/100)*gridRowLength;
-
 	for (var i=0; i<players.length; i++) {
 	    if (players[i].ws.readyState === players[i].ws.OPEN) {
 	    	players[i].ws.send(JSON.stringify({
@@ -491,6 +505,9 @@ Grid.prototype.flagMessage = function(flag) {
 	        	index: currentGrid,
 	        	hasFlag: flag
 	    	}));
+	    }
+	    else {
+	    	console.log('player readystaet not open? huh?');
 	    }
 	}
 }
