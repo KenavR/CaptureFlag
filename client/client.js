@@ -19,10 +19,14 @@ var grids = [];
 var gridRowLength;
 var boostReady = document.getElementById('boost');
 
-var images = [new Image(), new Image()];
+var images = [new Image(), new Image(), new Image(), new Image()];
 
 images[0].src = "images/stone.jpg";
 images[1].src = "images/wall.jpg";
+images[2].src = "images/background.png";
+images[3].src = "images/flag.png";
+
+
 
 
 
@@ -47,27 +51,34 @@ ws.onmessage = function(e) {
         ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
         ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
 
-        //Draw all players within viewport
-        for (var i=0; i<message.players.length; i++) {
-            draw(message.players[i][0], message.players[i][1], message.players[i][2]);
-        }
+        drawBackground();
 
-        //Only show grids within viewing range
+        //Determine which grids are in viewport range
         player.currentGrid = Math.floor(player.x/100) + Math.floor(player.y/100)*gridRowLength;
 
         var viewStartGrid = player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 >= 0 ? player.currentGrid - Math.floor(canvas.width/2/100) - Math.floor(canvas.height/2/100)*gridRowLength - gridRowLength-1 : 0;
         var viewEndGrid = player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 < grids.length ? player.currentGrid + Math.ceil(canvas.width/2/100) + Math.ceil(canvas.height/2/100)*gridRowLength+1 : grids.length;
 
+        //Draw all grids in viewport range
         for (var i=viewStartGrid; i<viewEndGrid; i++) {
             try { 
                 if (Math.abs(grids[player.currentGrid].x-grids[i].x) < canvas.width/2+100 && Math.abs(grids[player.currentGrid].y-grids[i].y) < canvas.height/2+100 && grids[i].type > 0) {
-                    grids[i].type > 0 ? drawGrids(grids[i].x, grids[i].y, grids[i].type) : 0;
+                    grids[i].type > 0 ? drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
                 }
             }
             catch(e) {
                 console.log(e);
             }
         }
+
+        //Draw all players within viewport
+        for (var i=0; i<message.players.length; i++) {
+            draw(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
+        }
+    }
+
+    else if (message.type == 'flagUpdate') {
+        grids[message.index].flag = message.hasFlag;
     }
 
     //This client just joined
@@ -95,13 +106,16 @@ ws.onmessage = function(e) {
 
 
 
+
+
 var player = {
     x: 0,
     y: 0,
     id: 0,
     move: [0, 0, 0, 0],
     updated: false,
-    currentGrid: 0
+    currentGrid: 0,
+    boostReady: true
 }
 
 
@@ -112,28 +126,51 @@ var player = {
 
 
 
-ctx.lineWidth = 1;
 
-function draw(x, y, color) {
+
+
+
+// Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
+
+function draw(x, y, color, flag) {
     ctx.beginPath();
-    ctx.arc(x, y, 40, 0, 2*Math.PI);
+    ctx.arc(x, y, 30, 0, 2*Math.PI);
     ctx.fillStyle = color;
     ctx.fill();
+
+    flag ? ctx.drawImage(images[3], x-15, y-20, 30, 40) : 0;
 }
 
-function drawGrids(x, y, type) {
+function drawGrids(x, y, type, flag) {
     //Wall
-    // ctx.beginPath();
-    // ctx.rect(x+5, y+5, 90, 90);
-    // ctx.fillStyle = 'rgba(0,0,0,.75)';
-    // ctx.fill();
     if (type == 1) {
 		ctx.drawImage(images[type-1], x+10, y+10, 80, 80);
 	}
+    //Edge wall
 	else if (type == 2) {
 		ctx.drawImage(images[type-1], x, y, 100, 100);
 	}
+    //Flag spawn points
+    else if (type == 3) {
+        ctx.beginPath();
+        ctx.rect(x+10, y+10, 80, 80);
+        ctx.fillStyle = x > grids[Math.round(gridRowLength/2)].x ? 'rgba(255,0,0,.25)' : 'rgba(0,0,255,.25)';
+        ctx.fill();
+    }
+
+    //Flag
+    flag ? ctx.drawImage(images[3], x+35, y+30, 30, 40) : 0;
 }
+
+function drawBackground() {
+    ctx.fillStyle = ctx.createPattern(images[2], 'repeat');
+    ctx.fillRect(player.x - (canvas.width / 2), player.y - (canvas.height / 2), canvas.width, canvas.height);
+}
+
+
+
+
+
 
 
 
@@ -158,7 +195,8 @@ window.addEventListener('keydown', function(e) {
     }));
 
     if (e.keyCode == 32) {
-    	if (boostReady.offsetWidth == 400) {
+    	if (player.boostReady) {
+            player.boostReady = false;
 		    ws.send(JSON.stringify({
 		        type: 'boost',
 		        id: player.id
@@ -166,11 +204,12 @@ window.addEventListener('keydown', function(e) {
 
 			//Reset boost animation
 			boostReady.style.animation = 'none';
-			boostReady.offsetHeight; /* trigger reflow */
+			boostReady.offsetHeight;
 			boostReady.style.animation = null; 
-		}
-		else {
-			console.log(boostReady.offsetWidth);
+
+            setTimeout(function() {
+                player.boostReady = true;
+            },1000);
 		}
     }
 });

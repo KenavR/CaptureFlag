@@ -15,16 +15,20 @@ const websocketServer = new SocketServer({ server });
 var players = [];
 var grids = [];
 
-
-
+//0 = empty
+//1 = wall 
+//2 = edge wall
+//3 = team flag spawn
+//8 = red team spawn points
+//9 = blue team spawn points
 var map1 = [
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,2,2, 
-	2,2,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,2,2, 
-	2,2,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,2,2, 
+	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,0,8,2,2, 
+	2,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,8,0,8,0,2,2, 
+	2,2,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,8,0,3,0,8,2,2, 
+	2,2,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,8,0,8,0,2,2, 
+	2,2,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,8,0,8,2,2, 
 	2,2,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,2,2, 
 	2,2,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2, 
 	2,2,0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,2, 
@@ -36,24 +40,24 @@ var map1 = [
 	2,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,2,2, 
 	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,2,2, 
 	2,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,2,2, 
-	2,2,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,2,2, 
-	2,2,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,2,2, 
-	2,2,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,2, 
-	2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2, 
+	2,2,9,0,9,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,2,2, 
+	2,2,0,9,0,9,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,2,2, 
+	2,2,9,0,3,0,9,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,2,2, 
+	2,2,0,9,0,9,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,2, 
+	2,2,9,0,9,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2, 
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 ];
-
-
 
 var gridRowLength = 25;
 //Create 50x50 grid map
 for (var i=0; i<gridRowLength; i++) {
 	for (var j=0; j<gridRowLength; j++) {
-		grids.push(new Grid(j*100, i*100));
+		grids.push(new Grid(j*100, i*100, map1[i+j*gridRowLength]));
 	}
 }
+
+
 
 
 
@@ -118,7 +122,7 @@ websocketServer.on('connection', (ws) => {
 		        	players[messageIndex].velY *= 2;
 
 	        	setTimeout(function() {
-		        	players[messageIndex].moveSpeed = .25;
+		        	players[messageIndex].moveSpeed = .2;
 	        	},500);
 	        }
         }
@@ -136,16 +140,24 @@ websocketServer.on('connection', (ws) => {
 
 
 
+
+
+
+
+
+
+
 setInterval(function() {
 	try {
 		var minimizedPlayers = [];
-
-	console.log(Math.round(players[0].velX) + ' ' + Math.round(players[0].velY));
 
 		for (var i=0; i<players.length; i++) {
 			players[i].update();
 
 			minimizedPlayers.push([players[i].x.toFixed(2), players[i].y.toFixed(2), players[i].color]);
+			if (players[i].hasFlag) {
+				minimizedPlayers[minimizedPlayers.length-1].push(players[i].hasFlag);
+			}
 		}
 
 		for (var i=0; i<players.length; i++) {
@@ -158,7 +170,7 @@ setInterval(function() {
 		    	}));
 		    }
 		    else {
-		    	console.log('delete 1 player jasljdajlksfjlkafjlkajlkfjlkfjlkasljkfljskfljkfljkasjkfjlafjlkaf');
+		    	console.log('setInterval delete 1 player jasljdajlksfjlkafjlkajlkfjlkfjlkasljkfljskfljkfljkasjkfjlafjlkaf');
 		    	players.splice(i, 1);
 		    }
 		}
@@ -176,18 +188,26 @@ setInterval(function() {
 
 
 
+
+
+
+
+
+
 function Player(ws) {
-	this.x = gridRowLength*50;
-	this.y = gridRowLength*50;
+	this.team = Math.round(Math.random());
+	this.x;
+	this.y;
 	this.velX = 0;
 	this.velY = 0;
 	this.move = [0, 0, 0, 0];
-	this.team = Math.round(Math.random());
 	this.id = Math.random();
 	this.ws = ws;
-	this.moveSpeed = .25;
+	this.moveSpeed = .2;
 	var teamColor = this.team == 1 ? 240 : 0;
-	this.color = 'hsl(' + teamColor + ',' + Math.floor(Math.random()*60+40) + '%,' + Math.floor(Math.random()*40+20) + '%)';
+	this.color = 'hsla(' + teamColor + ',' + Math.floor(Math.random()*60+40) + '%,' + Math.floor(Math.random()*40+20) + '%, .8)';
+	this.hasFlag = 0;
+	this.reset();
 }
 
 Player.prototype.update = function() {
@@ -210,10 +230,30 @@ Player.prototype.update = function() {
 }
 
 Player.prototype.reset = function() {
-	this.x = 250;
-	this.y = 250;
+	try {
+	var spawnPoints = [];
+
+	for (var i=0; i<map1.length; i++) {
+		if (map1[i] == 8 && this.team == 0) {
+			spawnPoints.push(i);
+		}
+		else if (map1[i] == 9 && this.team == 1) {
+			spawnPoints.push(i);
+		}
+	}
+	var spawn = Math.round(Math.random()*spawnPoints.length);
+	var test = grids[spawnPoints[spawn]];
+
+	this.x = test.x + 50;
+	this.y = test.y + 50;
 	this.velX = 0;
 	this.velY = 0;
+	}
+	catch (e) {
+		console.log('resetting error, trying again');
+		this.reset();
+	}
+
 }
 
 Player.prototype.collision = function() {
@@ -225,36 +265,57 @@ Player.prototype.collision = function() {
 							currentGrid+gridRowLength-1, currentGrid+gridRowLength, currentGrid+gridRowLength+1];
 
 		for (var i=0; i<collideGrids.length; i++) {
-			if (grids[collideGrids[i]].type == 1 || grids[collideGrids[i]].type == 2) {
-				var a = circRectCollision(this, grids[collideGrids[i]]);
+			if (grids[collideGrids[i]].type > 0 && grids[collideGrids[i]].type < 8) {
+				var collide = circRectCollision(this, grids[collideGrids[i]]);
 
-				if (a == 'X') {
-					var xLeftWall = this.x-grids[collideGrids[i]].x;
-					var xRightWall = grids[collideGrids[i]].x+100-this.x;
-					xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
-					break;
-				}
-				else if (a == 'Y') {
-					var yTopWall = this.y-grids[collideGrids[i]].y;
-					var yBottomWall = grids[collideGrids[i]].y+100-this.y;
-					yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
-					break;
-				}
-				else if (a == true) {
-					var xLeftWall = this.x-grids[collideGrids[i]].x;
-					var xRightWall = grids[collideGrids[i]].x+100-this.x;
-
-					var yTopWall = this.y-grids[collideGrids[i]].y;
-					var yBottomWall = grids[collideGrids[i]].y+100-this.y;
-
-					if (Math.min(xLeftWall, xRightWall) < Math.min(yTopWall, yBottomWall)) {
+				if (collide == 'X') {
+					if (grids[collideGrids[i]].type <= 2) {
+						var xLeftWall = this.x-grids[collideGrids[i]].x;
+						var xRightWall = grids[collideGrids[i]].x+100-this.x;
 						xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
-						break;
 					}
-					else if (Math.min(xLeftWall, xRightWall) > Math.min(yTopWall, yBottomWall)) {
+					//Hit left/right wall of flag spawn
+					else if (grids[collideGrids[i]].type == 3) {
+						grids[collideGrids[i]].flagCapture(this);
+					}
+
+					break;
+				}
+				else if (collide == 'Y') {
+					if (grids[collideGrids[i]].type <= 2) {
+						var yTopWall = this.y-grids[collideGrids[i]].y;
+						var yBottomWall = grids[collideGrids[i]].y+100-this.y;
 						yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
-						break;
 					}
+					//Hit top/bottom wall of flag spawn
+					else if (grids[collideGrids[i]].type == 3) {
+						grids[collideGrids[i]].flagCapture(this);
+					}
+
+					break;
+				}
+				else if (collide == true) {
+					if (grids[collideGrids[i]].type <= 2) {
+						console.log('corner');
+						var xLeftWall = this.x-grids[collideGrids[i]].x;
+						var xRightWall = grids[collideGrids[i]].x+100-this.x;
+
+						var yTopWall = this.y-grids[collideGrids[i]].y;
+						var yBottomWall = grids[collideGrids[i]].y+100-this.y;
+
+						if (Math.min(xLeftWall, xRightWall) < Math.min(yTopWall, yBottomWall)) {
+							xLeftWall < xRightWall ? this.velX = -this.velX-1 : this.velX = -this.velX+1;
+						}
+						else if (Math.min(xLeftWall, xRightWall) > Math.min(yTopWall, yBottomWall)) {
+							yTopWall < yBottomWall ? this.velY = -this.velY-1 : this.velY = -this.velY+1;
+						}
+					}
+					//Hit corner of flag spawn
+					else if (grids[collideGrids[i]].type == 3) {
+						grids[collideGrids[i]].flagCapture(this);
+					}
+
+					break;
 				}
 			}
 		}
@@ -262,7 +323,15 @@ Player.prototype.collision = function() {
 		for (var i=0; i<players.length; i++) {
 			if (players[i].id != this.id && players[i].team != this.team) {
 				var distance = Math.sqrt(((this.x - players[i].x) * (this.x - players[i].x))+ ((this.y - players[i].y) * (this.y - players[i].y)));
-				distance < 70 ? c2c(this, players[i]) : 0;
+				if (distance <= 60 && !players[i].hasFlag && !this.hasFlag) {
+					c2c(this, players[i]);
+				}
+				else if (distance <= 65 && players[i].hasFlag) {
+					players[i].reset();
+				}
+				else if (distance <= 65 && this.hasFlag) {
+					this.reset();
+				}
 			}
 		}
 	}
@@ -286,12 +355,14 @@ Player.prototype.collision = function() {
 
 
 
+
+
 function circRectCollision(player,rect){
     var distX = Math.abs(player.x - rect.x - 100/2);
     var distY = Math.abs(player.y - rect.y - 100/2);
 
-    if (distX > (100/2 + 30)) { return false; }
-    if (distY > (100/2 + 30)) { return false; }
+    if (distX > (100/2 + 20)) { return false; }
+    if (distY > (100/2 + 20)) { return false; }
 
     if (distX <= (100/2)) { return 'Y'; } 
     if (distY <= (100/2)) { return 'X'; }
@@ -299,7 +370,7 @@ function circRectCollision(player,rect){
     // also test for corner collisions
     var dx=distX-100/2;
     var dy=distY-100/2;
-    return (dx*dx+dy*dy<=(30*30));
+    return (dx*dx+dy*dy<=(20*20));
 }
 
 function c2c(p1, p2) {
@@ -345,23 +416,95 @@ function c2c(p1, p2) {
 
 
 
-function Grid(x, y) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Grid(x, y, type) {
 	this.x = x;
 	this.y = y;
-	this.type = isWall(this);
+	this.type = type;
+	this.type == 3 ? this.flag = 1 : 0;
+}
+Grid.prototype.flagCapture = function(player, index) {
+	//Blue hits red flag spawn
+	if (this.x > grids[Math.round(gridRowLength/2)].x && player.team) {
+		for (var i=0; i<players.length; i++) {
+			if (players[i].team && players[i].hasFlag) {break};
+		}
 
+		player.hasFlag = true;
+		this.flag = 0;
+		this.flagMessage(0);
+	}
+	//Red hits blue flag spawn
+	else if (this.x < grids[Math.round(gridRowLength/2)].x && !player.team) {
+		for (var i=0; i<players.length; i++) {
+			if (!players[i].team && players[i].hasFlag) {break};
+		}
+		player.hasFlag = true;
+		this.flag = 0;
+		this.flagMessage(0);
+	}
+	//Red hits red flag spawn
+	else if (this.x < grids[Math.round(gridRowLength/2)].x && player.team) {
+		if (player.hasFlag) {
+			player.hasFlag = 0;
+			this.flag = 1;
+			this.flagMessage(1);
+		}
+	}
+	else if (this.x > grids[Math.round(gridRowLength/2)].x && !player.team) {
+		if (player.hasFlag) {
+			player.hasFlag = 0;
+			this.flag = 1;
+			this.flagMessage(1);
+		}
+	}
+}
+Grid.prototype.flagMessage = function(flag) {
+	var currentGrid = Math.floor(this.x/100) + Math.floor(this.y/100)*gridRowLength;
+
+	for (var i=0; i<players.length; i++) {
+	    if (players[i].ws.readyState === players[i].ws.OPEN) {
+	    	players[i].ws.send(JSON.stringify({
+	        	type: 'flagUpdate',
+	        	index: currentGrid,
+	        	hasFlag: flag
+	    	}));
+	    }
+	}
 }
 
-function isWall(grid) {
+// function isWall(grid) {
 	//Use manually created map
-	return map1[grids.length];
+	// return map1[grids.length];
 
 	//Use randomly generated map
 	// return grid.x == 0 || grid.x == 100 || 
 	// grid.x == (gridRowLength-1)*100 || grid.x == (gridRowLength-1)*100-100 || 
 	// grid.y == 0 || grid.y == 100 ||
 	// grid.y == (gridRowLength-1)*100 || grid.y == (gridRowLength-1)*100-100 ? 1 : Math.round(Math.random()*100)+1 <= 16 ? 1 : 0;
-}
+// }
 
 
 
