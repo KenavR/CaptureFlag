@@ -213,7 +213,7 @@ window.addEventListener('keydown', function(e) {
 
             setTimeout(function() {
                 player.boostReady = true;
-            },100);
+            },10000);
 		}
     }
 });
