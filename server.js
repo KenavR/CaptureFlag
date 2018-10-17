@@ -241,7 +241,7 @@ Player.prototype.reset = function() {
 
 		//Get spot to spawn
 		for (var i=0; i<map1.length; i++) {
-			if (map1[i] == 9 && this.team == 0) {
+			if (map1[i] == 8 && this.team == 0) {
 				spawnPoints.push(i);
 			}
 			else if (map1[i] == 9 && this.team == 1) {
