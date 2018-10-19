@@ -42,10 +42,9 @@ var player = {
 	move: [0, 0, 0, 0],
 	updated: false,
 	currentGrid: 0,
-	boostReady: true
+	boostReady: true,
+	drawReady: true
 };
-
-
 
 
 
@@ -58,10 +57,16 @@ var player = {
 ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
 
-	if (message.type == "gameUpdate") {
+	if (message.type == "gameUpdate" && player.drawReady) {
+		player.drawReady = false;
+
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
-		player.x = Number(message.x);
-		player.y = Number(message.y);
+
+		var moveX = (message.x - player.x) / 2;
+		var moveY = (message.y - player.y) / 2;
+
+		player.x += moveX;
+		player.y += moveY;
 
 		//Move camera view to center with player
 		ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
@@ -91,6 +96,13 @@ ws.onmessage = function(e) {
 		for (var i = 0; i < message.players.length; i++) {
 			drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
 		}
+
+		//Draw to end spot
+		player.x += moveX;
+		player.y += moveY;
+		ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
+
+		player.drawReady = true;
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
 	}
@@ -119,16 +131,7 @@ ws.onmessage = function(e) {
 
 
 
-
-
-
-
-
-
-
-
 function Background() {
-	console.log('gg');
 	ctx.fillStyle = ctx.createPattern(background, 'repeat');
 	ctx.fillRect(player.x - (canvas.width / 2), player.y - (canvas.height / 2), canvas.width, canvas.height);
 }
