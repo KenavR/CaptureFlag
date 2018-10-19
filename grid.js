@@ -5,6 +5,9 @@ function Grid(x, y, type, game) {
 	this.y = y;
 	this.type = type;
 	this.type == 5 ? (this.flag = 1) : 0;
+	if (this.flag) {
+		this.team = x < Math.round(DEFAULTS.GridRowLength * 100 / 2) ? 1 : 0;
+	}
 	this.game = game;
 }
 

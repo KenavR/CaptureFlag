@@ -13,7 +13,6 @@ function Game(id) {
 
 Game.prototype.init = function init() {
 	var gridRowLength = DEFAULTS.GridRowLength;
-
 	//0 = empty
 	//1 = wall 
 	//2 = edge wall
@@ -68,6 +67,7 @@ Game.prototype.addPlayer = function addPlayer(player) {
 	this.players.push(player);
 	player.setPlayedGame(this);
 	const index = this.players.length - 1;
+
 	player.ws.send(JSON.stringify({
 		type: "initPlayer",
 		player: [this.players[index].x, this.players[index].y, this.players[index].id],

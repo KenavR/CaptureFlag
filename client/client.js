@@ -35,6 +35,25 @@ images[8].src = "images/BlueFlag.png";
 var background = new Image();
 background.src = "images/Background.png";
 
+var player = {
+	x: 0,
+	y: 0,
+	id: 0,
+	move: [0, 0, 0, 0],
+	updated: false,
+	currentGrid: 0,
+	boostReady: true
+};
+
+
+
+
+
+
+
+
+
+
 
 ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
@@ -70,7 +89,7 @@ ws.onmessage = function(e) {
 
 		//Draw all players within viewport
 		for (var i = 0; i < message.players.length; i++) {
-			draw(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
+			drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
 		}
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
@@ -100,16 +119,6 @@ ws.onmessage = function(e) {
 
 
 
-var player = {
-	x: 0,
-	y: 0,
-	id: 0,
-	move: [0, 0, 0, 0],
-	updated: false,
-	currentGrid: 0,
-	boostReady: true
-};
-
 
 
 
@@ -129,7 +138,7 @@ function Background() {
 
 
 // Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
-function draw(x, y, team, flag) {
+function drawPlayer(x, y, team, flag) {
 	if (!team) {
 		ctx.drawImage(images[5], x - 52.5, y - 52.5, 105, 105);
 		flag ? ctx.drawImage(images[8], x - 45, y - 45, 90, 90) : 0;
@@ -140,33 +149,20 @@ function draw(x, y, team, flag) {
 }
 
 function drawGrids(x, y, type, flag) {
-	//Wall
-	if (type == 1) {
+	//Wall, Edge Wall, Spike, Boost
+	if (type >= 1 && type <= 4) {
 		ctx.drawImage(images[type - 1], x + 10, y + 10, 80, 80);
 	}
-	//Edge wall
-	else if (type == 2) {
-		ctx.drawImage(images[type - 1], x, y, 100, 100);
-	}
-	//Spike
-	else if (type == 3) {
-		ctx.drawImage(images[type - 1], x + 15, y + 15, 70, 70);
-	}
-	//Boost
-	else if (type == 4) {}
 	//Flag spawn points
 	else if (type == 5) {
 		ctx.beginPath();
 		ctx.rect(x + 10, y + 10, 80, 80);
-		ctx.fillStyle =
-			x > grids[Math.round(gridRowLength / 2)].x ?
-			"rgba(255,0,0,.25)" :
-			"rgba(0,0,255,.25)";
+		ctx.fillStyle = x > grids[Math.round(gridRowLength / 2)].x ? "rgba(255,0,0,.25)" : "rgba(0,0,255,.25)";
 		ctx.fill();
 	}
 	//Flag
 	if (flag) {
-		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[7], x - 25, y - 25, 150, 150) : ctx.drawImage(images[8], x - 25, y - 25, 150, 150);
+		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[7], x - 25, y - 20, 150, 150) : ctx.drawImage(images[8], x - 25, y - 25, 150, 150);
 	}
 }
 
