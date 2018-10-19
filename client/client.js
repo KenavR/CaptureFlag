@@ -43,9 +43,10 @@ var player = {
 	updated: false,
 	currentGrid: 0,
 	boostReady: true,
-	drawReady: true
+	drawReady: true,
+	cameraX: 0,
+	cameraY: 0
 };
-
 
 
 
@@ -62,14 +63,18 @@ ws.onmessage = function(e) {
 
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
 
-		var moveX = (message.x - player.x) / 2;
-		var moveY = (message.y - player.y) / 2;
 
-		player.x += moveX;
-		player.y += moveY;
+		player.x = Number(message.x);
+		player.y = Number(message.y);
+
+		if (!player.cameraX) {
+			console.log('init camera');
+			player.cameraX = player.x;
+			player.cameraY = player.y;
+
+		}
 
 		//Move camera view to center with player
-		ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
 		ctx.clearRect(player.x - canvas.width / 2, player.y - canvas.height / 2, canvas.width, canvas.height);
 
 		//Determine which grids are in viewport range
@@ -97,11 +102,6 @@ ws.onmessage = function(e) {
 			drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
 		}
 
-		//Draw to end spot
-		player.x += moveX;
-		player.y += moveY;
-		ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
-
 		player.drawReady = true;
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
@@ -124,6 +124,25 @@ ws.onmessage = function(e) {
 };
 
 
+
+
+
+
+function smoothDraw() {
+	var moveX = (player.x - player.cameraX) * 0.3;
+	var moveY = (player.y - player.cameraY) * 0.3;
+
+	console.log(moveX + ' ' + moveY);
+
+	player.cameraX += moveX;
+	player.cameraY += moveY;
+
+	//Move camera view to center with player
+	ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
+
+	requestAnimationFrame(smoothDraw);
+}
+requestAnimationFrame(smoothDraw);
 
 
 
