@@ -32,6 +32,9 @@ images[6].src = "images/BluePlayer.png";
 images[7].src = "images/RedFlag.png";
 images[8].src = "images/BlueFlag.png";
 
+var background = new Image();
+background.src = "images/Background.png";
+
 
 ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
@@ -42,61 +45,23 @@ ws.onmessage = function(e) {
 		player.y = Number(message.y);
 
 		//Move camera view to center with player
-		ctx.setTransform(
-			1,
-			0,
-			0,
-			1, -player.x + canvas.width / 2, -player.y + canvas.height / 2
-		);
-		ctx.clearRect(
-			player.x - canvas.width / 2,
-			player.y - canvas.height / 2,
-			canvas.width,
-			canvas.height
-		);
+		ctx.setTransform(1, 0, 0, 1, -player.x + canvas.width / 2, -player.y + canvas.height / 2);
+		ctx.clearRect(player.x - canvas.width / 2, player.y - canvas.height / 2, canvas.width, canvas.height);
 
 		//Determine which grids are in viewport range
-		player.currentGrid =
-			Math.floor(player.x / 100) + Math.floor(player.y / 100) * gridRowLength;
+		player.currentGrid = Math.floor(player.x / 100) + Math.floor(player.y / 100) * gridRowLength;
 
-		var viewStartGrid =
-			player.currentGrid -
-			Math.floor(canvas.width / 2 / 100) -
-			Math.floor(canvas.height / 2 / 100) * gridRowLength -
-			gridRowLength -
-			1 >=
-			0 ?
-			player.currentGrid -
-			Math.floor(canvas.width / 2 / 100) -
-			Math.floor(canvas.height / 2 / 100) * gridRowLength -
-			gridRowLength -
-			1 :
-			0;
-		var viewEndGrid =
-			player.currentGrid +
-			Math.ceil(canvas.width / 2 / 100) +
-			Math.ceil(canvas.height / 2 / 100) * gridRowLength +
-			1 <
-			grids.length ?
-			player.currentGrid +
-			Math.ceil(canvas.width / 2 / 100) +
-			Math.ceil(canvas.height / 2 / 100) * gridRowLength +
-			1 :
-			grids.length;
+		var viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
+		var viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
+
+		Background();
 
 		//Draw all grids in viewport range
 		for (var i = viewStartGrid; i < viewEndGrid; i++) {
 			try {
-				if (
-					Math.abs(grids[player.currentGrid].x - grids[i].x) <
-					canvas.width / 2 + 100 &&
-					Math.abs(grids[player.currentGrid].y - grids[i].y) <
-					canvas.height / 2 + 100 &&
-					grids[i].type > 0
-				) {
+				if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
 					grids[i].type > 0 ?
-						drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) :
-						0;
+						drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
 				}
 			} catch (e) {
 				console.log(e);
@@ -105,12 +70,7 @@ ws.onmessage = function(e) {
 
 		//Draw all players within viewport
 		for (var i = 0; i < message.players.length; i++) {
-			draw(
-				message.players[i][0],
-				message.players[i][1],
-				message.players[i][2],
-				message.players[i][3]
-			);
+			draw(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
 		}
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
@@ -132,6 +92,14 @@ ws.onmessage = function(e) {
 	}
 };
 
+
+
+
+
+
+
+
+
 var player = {
 	x: 0,
 	y: 0,
@@ -142,8 +110,25 @@ var player = {
 	boostReady: true
 };
 
-// Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
 
+
+
+
+
+
+
+
+function Background() {
+	console.log('gg');
+	ctx.fillStyle = ctx.createPattern(background, 'repeat');
+	ctx.fillRect(player.x - (canvas.width / 2), player.y - (canvas.height / 2), canvas.width, canvas.height);
+}
+
+
+
+
+
+// Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
 function draw(x, y, team, flag) {
 	if (!team) {
 		ctx.drawImage(images[5], x - 52.5, y - 52.5, 105, 105);
