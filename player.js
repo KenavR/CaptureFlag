@@ -32,7 +32,6 @@ Player.prototype.getTeam = function() {
 
 Player.prototype.update = function() {
 	this.collision();
-
 	if (this.velX < 15 && this.velX > -15) {
 		this.move[3] ? (this.velX -= this.moveSpeed) : 0;
 		this.move[1] ? (this.velX += this.moveSpeed) : 0;
@@ -82,7 +81,8 @@ Player.prototype.reset = function() {
 			this.velY = 0;
 		}
 	} catch (e) {
-		console.log("resetting error, trying again");
+		console.log(e);
+		console.log("resetting error, trying again-----------------------");
 		this.reset();
 	}
 };

@@ -14,7 +14,6 @@ window.addEventListener("resize", function() {
 });
 
 var keyStates = [];
-var player;
 var grids = [];
 var gridRowLength;
 var boostReady = document.getElementById("boost");
@@ -43,11 +42,14 @@ var player = {
 	updated: false,
 	currentGrid: 0,
 	boostReady: true,
-	drawReady: true,
-	cameraX: 0,
-	cameraY: 0
+	cameraX: 1250,
+	cameraY: 1250
 };
 
+var oldPlayersPos = [
+	[0, 0]
+];
+var message;
 
 
 
@@ -56,53 +58,41 @@ var player = {
 
 
 ws.onmessage = function(e) {
-	var message = JSON.parse(e.data);
+	message = JSON.parse(e.data);
 
-	if (message.type == "gameUpdate" && player.drawReady) {
-		player.drawReady = false;
+	if (message.type == "gameUpdate") {
 
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
 
 
 		player.x = Number(message.x);
 		player.y = Number(message.y);
-
-		if (!player.cameraX) {
-			console.log('init camera');
-			player.cameraX = player.x;
-			player.cameraY = player.y;
-
-		}
-
-		//Move camera view to center with player
-		ctx.clearRect(player.x - canvas.width / 2, player.y - canvas.height / 2, canvas.width, canvas.height);
-
+		// ctx.clearRect(player.cadmeraX - canvas.width / 2, player.cameraY - canvas.height / 2, canvas.width, canvas.height);
 		//Determine which grids are in viewport range
 		player.currentGrid = Math.floor(player.x / 100) + Math.floor(player.y / 100) * gridRowLength;
 
-		var viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
-		var viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
+		viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
+		viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
 
-		Background();
-
-		//Draw all grids in viewport range
-		for (var i = viewStartGrid; i < viewEndGrid; i++) {
-			try {
-				if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
-					grids[i].type > 0 ?
-						drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
-				}
-			} catch (e) {
-				console.log(e);
-			}
-		}
+		// Background();
+		// //Draw all grids in viewport range
+		// for (var i = viewStartGrid; i < viewEndGrid; i++) {
+		// 	try {
+		// 		if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
+		// 			grids[i].type > 0 ?
+		// 				drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
+		// 		}
+		// 	} catch (e) {
+		// 		console.log(e);
+		// 	}
+		// }
 
 		//Draw all players within viewport
 		for (var i = 0; i < message.players.length; i++) {
-			drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
+			// oldPlayersPos[i] = [message.players[i][0], message.players[i][1]];
+			// drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
 		}
 
-		player.drawReady = true;
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
 	}
@@ -120,6 +110,8 @@ ws.onmessage = function(e) {
 				break;
 			}
 		}
+		console.log('AYYY THIS BOI JUST JOIN');
+		requestAnimationFrame(smoothDraw);
 	}
 };
 
@@ -128,21 +120,50 @@ ws.onmessage = function(e) {
 
 
 
+
+
+
 function smoothDraw() {
-	var moveX = (player.x - player.cameraX) * 0.3;
-	var moveY = (player.y - player.cameraY) * 0.3;
+	try {
+		//Move camera view to center with player
+		var moveCameraX = (player.x - player.cameraX) * 0.2;
+		var moveCameraY = (player.y - player.cameraY) * 0.2;
 
-	console.log(moveX + ' ' + moveY);
+		player.cameraX += moveCameraX;
+		player.cameraY += moveCameraY;
 
-	player.cameraX += moveX;
-	player.cameraY += moveY;
+		ctx.clearRect(player.cameraX - canvas.width / 2, player.cameraY - canvas.height / 2, canvas.width, canvas.height);
+		ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
 
-	//Move camera view to center with player
-	ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
+		Background();
+		//Draw all grids in viewport range
+		for (var i = viewStartGrid; i < viewEndGrid; i++) {
+			try {
+				if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
+					grids[i].type > 0 ?
+						drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
 
-	requestAnimationFrame(smoothDraw);
+		//Draw and smooth player's movements
+		for (var i = 0; i < message.players.length; i++) {
+			var movePlayerX = (message.players[i][0] - oldPlayersPos[i][0]) * 0.4;
+			var movePlayerY = (message.players[i][1] - oldPlayersPos[i][1]) * 0.4;
+
+			oldPlayersPos[i][0] += movePlayerX;
+			oldPlayersPos[i][1] += movePlayerY;
+
+			drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], message.players[i][2], message.players[i][3]);
+		}
+
+		requestAnimationFrame(smoothDraw);
+	} catch (e) {
+		console.log(e);
+	}
 }
-requestAnimationFrame(smoothDraw);
 
 
 
@@ -152,7 +173,7 @@ requestAnimationFrame(smoothDraw);
 
 function Background() {
 	ctx.fillStyle = ctx.createPattern(background, 'repeat');
-	ctx.fillRect(player.x - (canvas.width / 2), player.y - (canvas.height / 2), canvas.width, canvas.height);
+	ctx.fillRect(player.cameraX - (canvas.width / 2), player.cameraY - (canvas.height / 2), canvas.width, canvas.height);
 }
 
 
@@ -162,10 +183,10 @@ function Background() {
 // Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
 function drawPlayer(x, y, team, flag) {
 	if (!team) {
-		ctx.drawImage(images[5], x - 52.5, y - 52.5, 105, 105);
+		ctx.drawImage(images[5], x - 55, y - 55, 110, 110);
 		flag ? ctx.drawImage(images[8], x - 45, y - 45, 90, 90) : 0;
 	} else if (team) {
-		ctx.drawImage(images[6], x - 52.5, y - 52.5, 105, 105);
+		ctx.drawImage(images[6], x - 55, y - 55, 110, 110);
 		flag ? ctx.drawImage(images[7], x - 45, y - 45, 90, 90) : 0;
 	}
 }
@@ -222,7 +243,7 @@ window.addEventListener("keydown", function(e) {
 
 			setTimeout(function() {
 				player.boostReady = true;
-			}, 10000);
+			}, 100);
 		}
 	}
 });

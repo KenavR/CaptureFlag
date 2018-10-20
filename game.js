@@ -96,12 +96,14 @@ Game.prototype.processMessage = function processMessage(message) {
 	if (message.type == "playerMove") {
 		this.players[messageIndex].move = message.move
 	} else if (message.type == "boost") {
-		this.players[messageIndex].moveSpeed = 0.75;
-		this.players[messageIndex].velX *= 2;
-		this.players[messageIndex].velY *= 2;
-		setTimeout(function() {
-			this.players[messageIndex].moveSpeed = 0.2
-		}.bind(this), 500)
+		if (!this.players[messageIndex].hasFlag) {
+			this.players[messageIndex].moveSpeed = 0.7;
+			this.players[messageIndex].velX *= 2;
+			this.players[messageIndex].velY *= 2;
+			setTimeout(function() {
+				this.players[messageIndex].moveSpeed = 0.2
+			}.bind(this), 500);
+		}
 	}
 };
 
