@@ -41,11 +41,9 @@ Grid.prototype.flagCapture = function(player) {
 	//Blue returns red's flag to base
 	else if (this.x < this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && player.team) {
 		if (player.hasFlag) {
-			console.log('blue took flag capture ASDASD');
 			player.hasFlag = 0;
 			this.game.grids[this.game.redFlagSpawn].flag = 1;
-			console.log(this.game.grids[this.game.redFlagSpawn]);
-			this.game.grids[this.game.redFlagSpawn].flagMessage(1);
+			this.game.grids[this.game.redFlagSpawn].flagMessage(1, 1);
 		}
 	}
 	//Red returns blue's flag to base
@@ -53,12 +51,12 @@ Grid.prototype.flagCapture = function(player) {
 		if (player.hasFlag) {
 			player.hasFlag = 0;
 			this.game.grids[this.game.blueFlagSpawn].flag = 1;
-			this.game.grids[this.game.blueFlagSpawn].flagMessage(1);
+			this.game.grids[this.game.blueFlagSpawn].flagMessage(1, 0);
 		}
 	}
 };
 
-Grid.prototype.flagMessage = function(flag) {
+Grid.prototype.flagMessage = function(flag, flagCaptured) {
 	var currentGrid = Math.floor(this.x / 100) + Math.floor(this.y / 100) * DEFAULTS.GridRowLength;
 	for (var i = 0; i < this.game.players.length; i++) {
 		if (this.game.players[i].ws.readyState === this.game.players[i].ws.OPEN) {
@@ -66,7 +64,8 @@ Grid.prototype.flagMessage = function(flag) {
 				JSON.stringify({
 					type: "flagUpdate",
 					index: currentGrid,
-					hasFlag: flag
+					flagCaptured: flagCaptured
+
 				})
 			);
 		} else {

@@ -17,19 +17,25 @@ var keyStates = [];
 var grids = [];
 var gridRowLength;
 var boostReady = document.getElementById("boost");
+var redGainedPoint = document.getElementById("redGainedPoint");
+var blueGainedPoint = document.getElementById("blueGainedPoint");
+
 var currentGameId = null;
 
-var images = [new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image()];
+var images = [new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image()];
 
 images[0].src = "images/Wall.png";
 images[1].src = "images/BorderWall.png";
 images[2].src = "images/Spike.png";
-images[3].src = "images/Boost.png";
-images[4].src = "images/flagSpawn.png";
-images[5].src = "images/RedPlayer.png";
-images[6].src = "images/BluePlayer.png";
-images[7].src = "images/RedFlag.png";
-images[8].src = "images/BlueFlag.png";
+images[3].src = "images/BoostUp.png";
+images[4].src = "images/BoostRight.png";
+images[5].src = "images/BoostDown.png";
+images[6].src = "images/BoostLeft.png";
+images[7].src = "images/RedPlayer.png";
+images[8].src = "images/BluePlayer.png";
+images[9].src = "images/RedFlag.png";
+images[10].src = "images/BlueFlag.png";
+
 
 var background = new Image();
 background.src = "images/Background.png";
@@ -41,15 +47,28 @@ var player = {
 	move: [0, 0, 0, 0],
 	updated: false,
 	currentGrid: 0,
+	viewStartGrid: 0,
+	viewEndGrid: 0,
 	boostReady: true,
 	cameraX: 1250,
 	cameraY: 1250
 };
 
 var oldPlayersPos = [
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
+	[0, 0],
 	[0, 0]
 ];
 var message;
+
+
 
 
 
@@ -61,40 +80,31 @@ ws.onmessage = function(e) {
 	message = JSON.parse(e.data);
 
 	if (message.type == "gameUpdate") {
-
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
-
-
 		player.x = Number(message.x);
 		player.y = Number(message.y);
-		// ctx.clearRect(player.cadmeraX - canvas.width / 2, player.cameraY - canvas.height / 2, canvas.width, canvas.height);
+
 		//Determine which grids are in viewport range
 		player.currentGrid = Math.floor(player.x / 100) + Math.floor(player.y / 100) * gridRowLength;
 
-		viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
-		viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
-
-		// Background();
-		// //Draw all grids in viewport range
-		// for (var i = viewStartGrid; i < viewEndGrid; i++) {
-		// 	try {
-		// 		if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
-		// 			grids[i].type > 0 ?
-		// 				drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
-		// 		}
-		// 	} catch (e) {
-		// 		console.log(e);
-		// 	}
-		// }
-
-		//Draw all players within viewport
-		for (var i = 0; i < message.players.length; i++) {
-			// oldPlayersPos[i] = [message.players[i][0], message.players[i][1]];
-			// drawPlayer(message.players[i][0], message.players[i][1], message.players[i][2], message.players[i][3]);
-		}
+		player.viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
+		player.viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
 
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
+		if (message.hasOwnProperty('flagCaptured')) {
+			if (message.flagCaptured == 0) {
+				document.getElementById('redScore').innerHTML++;
+				redGainedPoint.style.animation = "none";
+				redGainedPoint.offsetHeight;
+				redGainedPoint.style.animation = null;
+			} else if (message.flagCaptured == 1) {
+				document.getElementById('blueScore').innerHTML++;
+				blueGainedPoint.style.animation = "none";
+				blueGainedPoint.offsetHeight;
+				blueGainedPoint.style.animation = null;
+			}
+		}
 	}
 
 	//This client just joined
@@ -125,29 +135,25 @@ ws.onmessage = function(e) {
 
 function smoothDraw() {
 	try {
+		ctx.clearRect(player.cameraX - 25 - canvas.width / 2, player.cameraY - 25 - canvas.height / 2, canvas.width + 50, canvas.height + 50);
 		//Move camera view to center with player
 		var moveCameraX = (player.x - player.cameraX) * 0.2;
 		var moveCameraY = (player.y - player.cameraY) * 0.2;
-
 		player.cameraX += moveCameraX;
 		player.cameraY += moveCameraY;
 
-		ctx.clearRect(player.cameraX - canvas.width / 2, player.cameraY - canvas.height / 2, canvas.width, canvas.height);
 		ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
 
 		Background();
-		//Draw all grids in viewport range
-		for (var i = viewStartGrid; i < viewEndGrid; i++) {
-			try {
-				if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
-					grids[i].type > 0 ?
-						drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
-				}
-			} catch (e) {
-				console.log(e);
+
+
+		// Draw all grids in viewport range
+		for (var i = player.viewStartGrid; i < player.viewEndGrid; i++) {
+			if (Math.abs(grids[player.currentGrid].x - grids[i].x) < canvas.width / 2 + 100 && Math.abs(grids[player.currentGrid].y - grids[i].y) < canvas.height / 2 + 100 && grids[i].type > 0) {
+				grids[i].type > 0 ?
+					drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
 			}
 		}
-
 		//Draw and smooth player's movements
 		for (var i = 0; i < message.players.length; i++) {
 			var movePlayerX = (message.players[i][0] - oldPlayersPos[i][0]) * 0.4;
@@ -160,6 +166,7 @@ function smoothDraw() {
 		}
 
 		requestAnimationFrame(smoothDraw);
+
 	} catch (e) {
 		console.log(e);
 	}
@@ -176,25 +183,32 @@ function Background() {
 	ctx.fillRect(player.cameraX - (canvas.width / 2), player.cameraY - (canvas.height / 2), canvas.width, canvas.height);
 }
 
-
-
+function drawImageLookat(img, x, y, lookx, looky) {
+	ctx.setTransform(1, 0, 0, 1, x, y); // set scale and origin
+	ctx.rotate(Math.atan2(looky - y, lookx - x)); // set angle
+	ctx.drawImage(img, -img.width / 2, -img.height / 2); // draw image
+	ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default not needed if you use setTransform for other rendering operations
+}
 
 
 // Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
 function drawPlayer(x, y, team, flag) {
 	if (!team) {
-		ctx.drawImage(images[5], x - 55, y - 55, 110, 110);
-		flag ? ctx.drawImage(images[8], x - 45, y - 45, 90, 90) : 0;
+		ctx.drawImage(images[7], x - 55, y - 55, 110, 110);
+		flag ? ctx.drawImage(images[10], x - 45, y - 45, 90, 90) : 0;
 	} else if (team) {
-		ctx.drawImage(images[6], x - 55, y - 55, 110, 110);
-		flag ? ctx.drawImage(images[7], x - 45, y - 45, 90, 90) : 0;
+		ctx.drawImage(images[8], x - 55, y - 55, 110, 110);
+		flag ? ctx.drawImage(images[9], x - 45, y - 45, 90, 90) : 0;
 	}
 }
 
 function drawGrids(x, y, type, flag) {
 	//Wall, Edge Wall, Spike, Boost
-	if (type >= 1 && type <= 4) {
-		ctx.drawImage(images[type - 1], x + 10, y + 10, 80, 80);
+	if (type >= 1 && type <= 3) {
+		ctx.drawImage(images[type - 1], x + 8, y + 8, 84, 84);
+	} else if (type > 4 && type < 5) {
+		var boostImg = type == 4.1 ? 3 : type == 4.2 ? 4 : type == 4.3 ? 5 : 6;
+		ctx.drawImage(images[boostImg], x, y, 100, 100);
 	}
 	//Flag spawn points
 	else if (type == 5) {
@@ -205,7 +219,7 @@ function drawGrids(x, y, type, flag) {
 	}
 	//Flag
 	if (flag) {
-		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[7], x - 25, y - 20, 150, 150) : ctx.drawImage(images[8], x - 25, y - 25, 150, 150);
+		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[9], x - 25, y - 20, 150, 150) : ctx.drawImage(images[10], x - 25, y - 25, 150, 150);
 	}
 }
 

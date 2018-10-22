@@ -90,9 +90,7 @@ Player.prototype.reset = function() {
 Player.prototype.collision = function() {
 	if (this.game) {
 		try {
-			var currentGrid =
-				Math.floor(this.x / 100) +
-				Math.floor(this.y / 100) * DEFAULTS.GridRowLength;
+			var currentGrid = Math.floor(this.x / 100) + Math.floor(this.y / 100) * DEFAULTS.GridRowLength;
 
 			var collideGrids = [
 				currentGrid - DEFAULTS.GridRowLength - 1, currentGrid - DEFAULTS.GridRowLength, currentGrid - DEFAULTS.GridRowLength + 1,
@@ -131,7 +129,7 @@ Player.prototype.collision = function() {
 					}
 				}
 				//Circle to circle collision
-				else if (this.game.grids[collideGrids[i]].type == 3 || this.game.grids[collideGrids[i]].type == 5) {
+				else if (this.game.grids[collideGrids[i]] && this.game.grids[collideGrids[i]].type == 3 || this.game.grids[collideGrids[i]].type == 5) {
 					var dist = Math.hypot(this.game.grids[collideGrids[i]].x + 50 - this.x, this.game.grids[collideGrids[i]].y + 50 - this.y);
 
 					if (dist < 60) {
@@ -140,6 +138,17 @@ Player.prototype.collision = function() {
 						} else if (this.game.grids[collideGrids[i]].type == 3) {
 							this.reset();
 						}
+					}
+				}
+				//Boost pad
+				else if (this.game.grids[collideGrids[i]].type > 4 && this.game.grids[collideGrids[i]].type < 5) {
+					var collide = circRectCollision(this, this.game.grids[collideGrids[i]]);
+
+					if (collide) {
+						this.game.grids[collideGrids[i]].type == 4.1 ? this.velY -= .4 :
+							this.game.grids[collideGrids[i]].type == 4.2 ? this.velX += .4 :
+							this.game.grids[collideGrids[i]].type == 4.3 ? this.velY += .4 :
+							this.game.grids[collideGrids[i]].type == 4.4 ? this.velX -= .4 : 0;
 					}
 				}
 			}
@@ -237,7 +246,7 @@ function circRectCollision(player, rect) {
 	// also test for corner collisions
 	var dx = distX - 100 / 2;
 	var dy = distY - 100 / 2;
-	return dx * dx + dy * dy <= 20 * 20;
+	return dx * dx + dy * dy <= 18 * 18;
 }
 
 
