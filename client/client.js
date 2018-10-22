@@ -205,7 +205,7 @@ function drawPlayer(x, y, team, flag) {
 function drawGrids(x, y, type, flag) {
 	//Wall, Edge Wall, Spike, Boost
 	if (type >= 1 && type <= 3) {
-		ctx.drawImage(images[type - 1], x + 8, y + 8, 84, 84);
+		ctx.drawImage(images[type - 1], x + 8, y + 8 r, 84, 84);
 	} else if (type > 4 && type < 5) {
 		var boostImg = type == 4.1 ? 3 : type == 4.2 ? 4 : type == 4.3 ? 5 : 6;
 		ctx.drawImage(images[boostImg], x, y, 100, 100);
