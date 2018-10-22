@@ -43,6 +43,8 @@ background.src = "images/Background.png";
 var player = {
 	x: 0,
 	y: 0,
+	velX: 0,
+	velY: 0,
 	id: 0,
 	move: [0, 0, 0, 0],
 	updated: false,
@@ -54,9 +56,10 @@ var player = {
 	cameraY: 1250
 };
 
+//x, y, oldVelX, oldVelY, newVelX, newVelY
 var oldPlayersPos = [
-	[0, 0, 0, 0],
-	[0, 0, 0, 0],
+	[25, 25, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0],
 	[0, 0, 0, 0],
 	[0, 0, 0, 0],
 	[0, 0, 0, 0],
@@ -78,7 +81,6 @@ var updateMessage;
 
 ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
-	frames = 1;
 
 	if (message.type == "gameUpdate") {
 		updateMessage = JSON.parse(e.data);
@@ -87,8 +89,21 @@ ws.onmessage = function(e) {
 		player.x = Number(message.x);
 		player.y = Number(message.y);
 
+
+
+
+		//Set new velX/velY
+		oldPlayersPos[0][4] = message.players[0][3];
+		oldPlayersPos[0][5] = message.players[0][4];
+
+		oldPlayersPos[0][2] = oldPlayersPos[0][4];
+		oldPlayersPos[0][3] = oldPlayersPos[0][5];
+
+
+
+
 		//Determine which grids are in viewport range
-		player.currentGrid = Math.floor(player.x / 100) + Math.floor(player.y / 100) * gridRowLength;
+		player.currentGrid = Math.floor(player.cameraX / 100) + Math.floor(player.cameraY / 100) * gridRowLength;
 
 		player.viewStartGrid = player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 >= 0 ? player.currentGrid - Math.floor(canvas.width / 2 / 100) - Math.floor(canvas.height / 2 / 100) * gridRowLength - gridRowLength - 1 : 0;
 		player.viewEndGrid = player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 < grids.length ? player.currentGrid + Math.ceil(canvas.width / 2 / 100) + Math.ceil(canvas.height / 2 / 100) * gridRowLength + 1 : grids.length;
@@ -119,6 +134,14 @@ ws.onmessage = function(e) {
 		document.getElementById('redScore').innerHTML = message.score[0];
 		document.getElementById('blueScore').innerHTML = message.score[1];
 
+
+
+
+		oldPlayersPos[0][2] = Number(message.player[0]);
+		oldPlayersPos[0][3] = Number(message.player[1]);
+
+
+
 		gridRowLength = message.gridRowLength;
 
 		console.log('AYYY THIS BOI JUST JOIN');
@@ -134,13 +157,8 @@ ws.onmessage = function(e) {
 
 
 
-var frames = 1;
-
-
 function smoothDraw() {
 	try {
-		// if (frames <= 3) {
-		frames++;
 		ctx.clearRect(player.cameraX - 25 - canvas.width / 2, player.cameraY - 25 - canvas.height / 2, canvas.width + 50, canvas.height + 50);
 		//Move camera view to center with player
 		var moveCameraX = (player.x - player.cameraX) * .2;
@@ -161,17 +179,87 @@ function smoothDraw() {
 			}
 		}
 
+
+
+
+
+
+
+		// Hermite Spline? =[
+		let p0 = [oldPlayersPos[0][0], oldPlayersPos[0][1]];
+		let v0 = [oldPlayersPos[0][2], oldPlayersPos[0][3]];
+
+		let p1 = [player.x, player.y];
+		let v1 = [oldPlayersPos[0][4], oldPlayersPos[0][5]];
+
+		let shadow = cubicHermite(p0, v0, p1, v1, 20 / 60);
+		let dShadow = dcubicHermite(p0, v0, p1, v1, 20 / 60);
+
+
+		oldPlayersPos[0][0] = shadow[0];
+		oldPlayersPos[0][1] = shadow[1];
+		oldPlayersPos[0][2] = dShadow[0];
+		oldPlayersPos[0][3] = dShadow[1];
+
+
+
+		function cubicHermite(p0, v0, p1, v1, t, f) {
+			let ti = t - 1,
+				t2 = t * t,
+				ti2 = ti * ti,
+				h00 = (1 + 2 * t) * ti2,
+				h10 = t * ti2,
+				h01 = t2 * (3 - 2 * t),
+				h11 = t2 * ti;
+			if (p0.length) {
+				if (!f) {
+					f = new Array(p0.length);
+				}
+				for (let i = p0.length - 1; i >= 0; --i) {
+					f[i] = h00 * p0[i] + h10 * v0[i] + h01 * p1[i] + h11 * v1[i];
+				}
+				return f;
+			}
+			return h00 * p0 + h10 * v0 + h01 * p1 + h11 * v1;
+		};
+
+		function dcubicHermite(p0, v0, p1, v1, t, f) {
+			var dh00 = 6 * t * t - 6 * t,
+				dh10 = 3 * t * t - 4 * t + 1,
+				dh01 = -6 * t * t + 6 * t,
+				dh11 = 3 * t * t - 2 * t;
+			if (p0.length) {
+				if (!f) {
+					f = new Array(p0.length);
+				}
+				for (var i = p0.length - 1; i >= 0; --i) {
+					f[i] = dh00 * p0[i] + dh10 * v0[i] + dh01 * p1[i] + dh11 * v1[i];
+				}
+				return f;
+			}
+			return dh00 * p0 + dh10 * v0 + dh01 * p1[i] + dh11 * v1;
+		};
+
 		//Draw and smooth player's movements
-		for (var i = 0; i < updateMessage.players.length; i++) {
-			var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) * .4;
-			var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) * .4;
+		// for (var i = 0; i < updateMessage.players.length; i++) {
+		// 	var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) * .4;
+		// 	var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) * .4;
 
-			oldPlayersPos[i][0] += movePlayerX;
-			oldPlayersPos[i][1] += movePlayerY;
+		// 	oldPlayersPos[i][0] += movePlayerX;
+		// 	oldPlayersPos[i][1] += movePlayerY;
 
-			drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], updateMessage.players[i][2], updateMessage.players[i][3]);
-		}
+		drawPlayer(oldPlayersPos[0][0], oldPlayersPos[0][1], updateMessage.players[0][2], updateMessage.players[0][3]);
 		// }
+		// }
+
+
+
+
+
+
+
+
+
 		requestAnimationFrame(smoothDraw);
 
 	} catch (e) {

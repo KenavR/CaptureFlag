@@ -116,7 +116,7 @@ Game.prototype.start = function start() {
 			var minimizedPlayers = [];
 			for (var i = 0; i < this.players.length; i++) {
 				this.players[i].update();
-				minimizedPlayers.push([this.players[i].x.toFixed(2), this.players[i].y.toFixed(2), this.players[i].team]);
+				minimizedPlayers.push([this.players[i].x.toFixed(2), this.players[i].y.toFixed(2), this.players[i].team, this.players[i].velX, this.players[i].velY]);
 
 				if (this.players[i].hasFlag) {
 					minimizedPlayers[minimizedPlayers.length - 1].push(this.players[i].hasFlag)
@@ -141,6 +141,6 @@ Game.prototype.start = function start() {
 			console.log(e)
 		}
 	}
-	setInterval(gameLoop.bind(this), 30)
+	setInterval(gameLoop.bind(this), 50)
 };
 module.exports = exports = Game

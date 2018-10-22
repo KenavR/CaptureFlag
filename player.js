@@ -111,12 +111,12 @@ Player.prototype.collision = function() {
 					if (collide == "X") {
 						var xLeftWall = this.x - this.game.grids[collideGrids[i]].x;
 						var xRightWall = this.game.grids[collideGrids[i]].x + 100 - this.x;
-						xLeftWall < xRightWall ? (this.velX = -this.velX - 1) : (this.velX = -this.velX + 1);
+						xLeftWall < xRightWall ? (this.velX = -this.velX * .95 - 1) : (this.velX = -this.velX + 1);
 						break;
 					} else if (collide == "Y") {
 						var yTopWall = this.y - this.game.grids[collideGrids[i]].y;
 						var yBottomWall = this.game.grids[collideGrids[i]].y + 100 - this.y;
-						yTopWall < yBottomWall ? (this.velY = -this.velY - 1) : (this.velY = -this.velY + 1);
+						yTopWall < yBottomWall ? (this.velY = -this.velY * .95 - 1) : (this.velY = -this.velY + 1);
 						break;
 					} else if (collide == true) {
 						var xLeftWall = this.x - this.game.grids[collideGrids[i]].x;
@@ -126,9 +126,9 @@ Player.prototype.collision = function() {
 						var yBottomWall = this.game.grids[collideGrids[i]].y + 100 - this.y;
 
 						if (Math.min(xLeftWall, xRightWall) < Math.min(yTopWall, yBottomWall)) {
-							xLeftWall < xRightWall ? (this.velX = -this.velX - 1) : (this.velX = -this.velX + 1);
+							xLeftWall < xRightWall ? (this.velX = -this.velX * .95 - 1) : (this.velX = -this.velX * .95 + 1);
 						} else if (Math.min(xLeftWall, xRightWall) > Math.min(yTopWall, yBottomWall)) {
-							yTopWall < yBottomWall ? (this.velY = -this.velY - 1) : (this.velY = -this.velY + 1);
+							yTopWall < yBottomWall ? (this.velY = -this.velY * .95 - 1) : (this.velY = -this.velY * .95 + 1);
 						}
 						break;
 					}
@@ -179,7 +179,6 @@ Player.prototype.collision = function() {
 		}
 	}
 };
-
 
 
 
