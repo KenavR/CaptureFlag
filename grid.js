@@ -12,8 +12,8 @@ function Grid(x, y, type, game) {
 }
 
 Grid.prototype.flagCapture = function(player) {
-	//Blue captures red's flag
-	if (this.x > this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && player.team) {
+	//Flag was taken from spawn spot
+	if (this.x > this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && player.team || this.x < this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && !player.team) {
 		for (var i = 0; i < this.game.players.length; i++) {
 			if (this.game.players[i].team && this.game.players[i].hasFlag) {
 				break;
@@ -25,47 +25,31 @@ Grid.prototype.flagCapture = function(player) {
 			this.flagMessage(0);
 		}
 	}
-	//Red captures blue's flag
-	else if (this.x < this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && !player.team) {
-		for (var i = 0; i < this.game.players.length; i++) {
-			if (!this.game.players[i].team && this.game.players[i].hasFlag) {
-				break;
-			}
-		}
-		player.hasFlag = true;
-		if (this.flag) {
-			this.flagMessage(0);
-			this.flag = 0;
-		}
-	}
-	//Blue returns red's flag to base
-	else if (this.x < this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && player.team) {
+
+	//Flag captured
+	else if (this.x < this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && player.team || this.x > this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && !player.team) {
 		if (player.hasFlag) {
 			player.hasFlag = 0;
-			this.game.grids[this.game.redFlagSpawn].flag = 1;
-			this.game.grids[this.game.redFlagSpawn].flagMessage(1, 1);
-		}
-	}
-	//Red returns blue's flag to base
-	else if (this.x > this.game.grids[Math.round(DEFAULTS.GridRowLength / 2)].x && !player.team) {
-		if (player.hasFlag) {
-			player.hasFlag = 0;
-			this.game.grids[this.game.blueFlagSpawn].flag = 1;
-			this.game.grids[this.game.blueFlagSpawn].flagMessage(1, 0);
+			this.team ? this.game.score[1]++ : this.game.score[0]++;
+			this.team ? this.game.grids[this.game.redFlagSpawn].flag = 1 : this.game.grids[this.game.blueFlagSpawn].flag = 1;
+			this.team ? this.game.grids[this.game.redFlagSpawn].flagMessage(1, this.game.score) : this.game.grids[this.game.blueFlagSpawn].flagMessage(1, this.game.score);
 		}
 	}
 };
 
-Grid.prototype.flagMessage = function(flag, flagCaptured) {
+Grid.prototype.flagMessage = function(flag, score) {
 	var currentGrid = Math.floor(this.x / 100) + Math.floor(this.y / 100) * DEFAULTS.GridRowLength;
 	for (var i = 0; i < this.game.players.length; i++) {
 		if (this.game.players[i].ws.readyState === this.game.players[i].ws.OPEN) {
+			console.log('FLAGGG ' + flag);
+			flag == 0 || flag == 1 ? this.flag = flag : 0;
+
 			this.game.players[i].ws.send(
 				JSON.stringify({
 					type: "flagUpdate",
 					index: currentGrid,
-					flagCaptured: flagCaptured
-
+					hasFlag: this.flag,
+					score: score
 				})
 			);
 		} else {

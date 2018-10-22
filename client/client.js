@@ -55,18 +55,18 @@ var player = {
 };
 
 var oldPlayersPos = [
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0],
-	[0, 0]
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
+	[0, 0, 0, 0],
 ];
-var message;
+var updateMessage;
 
 
 
@@ -77,9 +77,12 @@ var message;
 
 
 ws.onmessage = function(e) {
-	message = JSON.parse(e.data);
+	var message = JSON.parse(e.data);
+	frames = 1;
 
 	if (message.type == "gameUpdate") {
+		updateMessage = JSON.parse(e.data);
+
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
 		player.x = Number(message.x);
 		player.y = Number(message.y);
@@ -92,13 +95,13 @@ ws.onmessage = function(e) {
 
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
-		if (message.hasOwnProperty('flagCaptured')) {
-			if (message.flagCaptured == 0) {
+		if (message.hasOwnProperty('score')) {
+			if (message.score[0]) {
 				document.getElementById('redScore').innerHTML++;
 				redGainedPoint.style.animation = "none";
 				redGainedPoint.offsetHeight;
 				redGainedPoint.style.animation = null;
-			} else if (message.flagCaptured == 1) {
+			} else if (message.score[1]) {
 				document.getElementById('blueScore').innerHTML++;
 				blueGainedPoint.style.animation = "none";
 				blueGainedPoint.offsetHeight;
@@ -113,13 +116,11 @@ ws.onmessage = function(e) {
 		player.y = message.player[1];
 		player.id = message.player[2];
 		grids = message.grids;
+		document.getElementById('redScore').innerHTML = message.score[0];
+		document.getElementById('blueScore').innerHTML = message.score[1];
 
-		for (var i = 0; i < grids.length; i++) {
-			if (grids[i].y > 0) {
-				gridRowLength = i;
-				break;
-			}
-		}
+		gridRowLength = message.gridRowLength;
+
 		console.log('AYYY THIS BOI JUST JOIN');
 		requestAnimationFrame(smoothDraw);
 	}
@@ -133,12 +134,17 @@ ws.onmessage = function(e) {
 
 
 
+var frames = 1;
+
+
 function smoothDraw() {
 	try {
+		// if (frames <= 3) {
+		frames++;
 		ctx.clearRect(player.cameraX - 25 - canvas.width / 2, player.cameraY - 25 - canvas.height / 2, canvas.width + 50, canvas.height + 50);
 		//Move camera view to center with player
-		var moveCameraX = (player.x - player.cameraX) * 0.2;
-		var moveCameraY = (player.y - player.cameraY) * 0.2;
+		var moveCameraX = (player.x - player.cameraX) * .2;
+		var moveCameraY = (player.y - player.cameraY) * .2;
 		player.cameraX += moveCameraX;
 		player.cameraY += moveCameraY;
 
@@ -154,17 +160,18 @@ function smoothDraw() {
 					drawGrids(grids[i].x, grids[i].y, grids[i].type, grids[i].flag) : 0;
 			}
 		}
+
 		//Draw and smooth player's movements
-		for (var i = 0; i < message.players.length; i++) {
-			var movePlayerX = (message.players[i][0] - oldPlayersPos[i][0]) * 0.4;
-			var movePlayerY = (message.players[i][1] - oldPlayersPos[i][1]) * 0.4;
+		for (var i = 0; i < updateMessage.players.length; i++) {
+			var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) * .4;
+			var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) * .4;
 
 			oldPlayersPos[i][0] += movePlayerX;
 			oldPlayersPos[i][1] += movePlayerY;
 
-			drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], message.players[i][2], message.players[i][3]);
+			drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], updateMessage.players[i][2], updateMessage.players[i][3]);
 		}
-
+		// }
 		requestAnimationFrame(smoothDraw);
 
 	} catch (e) {
@@ -178,20 +185,20 @@ function smoothDraw() {
 
 
 
+
+
 function Background() {
 	ctx.fillStyle = ctx.createPattern(background, 'repeat');
 	ctx.fillRect(player.cameraX - (canvas.width / 2), player.cameraY - (canvas.height / 2), canvas.width, canvas.height);
 }
 
-function drawImageLookat(img, x, y, lookx, looky) {
-	ctx.setTransform(1, 0, 0, 1, x, y); // set scale and origin
-	ctx.rotate(Math.atan2(looky - y, lookx - x)); // set angle
-	ctx.drawImage(img, -img.width / 2, -img.height / 2); // draw image
-	ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default not needed if you use setTransform for other rendering operations
-}
+// function drawImageLookat(img, x, y, lookx, looky) {
+// 	ctx.setTransform(1, 0, 0, 1, x, y); // set scale and origin
+// 	ctx.rotate(Math.atan2(looky - y, lookx - x)); // set angle
+// 	ctx.drawImage(img, -img.width / 2, -img.height / 2); // draw image
+// 	ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default not needed if you use setTransform for other rendering operations
+// }
 
-
-// Math.atan2(5,5)*180/Math.PI; add angle arrow sometime
 function drawPlayer(x, y, team, flag) {
 	if (!team) {
 		ctx.drawImage(images[7], x - 55, y - 55, 110, 110);
@@ -224,20 +231,27 @@ function drawGrids(x, y, type, flag) {
 }
 
 window.addEventListener("keydown", function(e) {
-	player.updated = true;
-	[87, 38].indexOf(e.keyCode) > -1 ? (player.move[0] = 1) : 0;
-	[68, 39].indexOf(e.keyCode) > -1 ? (player.move[1] = 1) : 0;
-	[83, 40].indexOf(e.keyCode) > -1 ? (player.move[2] = 1) : 0;
-	[65, 37].indexOf(e.keyCode) > -1 ? (player.move[3] = 1) : 0;
 
-	ws.send(
-		JSON.stringify({
-			gameId: currentGameId,
-			type: "playerMove",
-			move: player.move,
-			id: player.id
-		})
-	);
+	[87, 38].indexOf(e.keyCode) > -1 ? moveUpdated(0) : 0;
+	[68, 39].indexOf(e.keyCode) > -1 ? moveUpdated(1) : 0;
+	[83, 40].indexOf(e.keyCode) > -1 ? moveUpdated(2) : 0;
+	[65, 37].indexOf(e.keyCode) > -1 ? moveUpdated(3) : 0;
+
+	//Only send message if move array changed
+	function moveUpdated(i) {
+		if (!player.move[i]) {
+			player.move[i] = 1;
+
+			ws.send(
+				JSON.stringify({
+					gameId: currentGameId,
+					type: "playerMove",
+					move: player.move,
+					id: player.id
+				})
+			);
+		}
+	}
 
 	if (e.keyCode == 32) {
 		if (player.boostReady) {
@@ -249,21 +263,19 @@ window.addEventListener("keydown", function(e) {
 					id: player.id
 				})
 			);
-
-			//Reset boost animation
-			boostReady.style.animation = "none";
-			boostReady.offsetHeight;
-			boostReady.style.animation = null;
-
-			setTimeout(function() {
-				player.boostReady = true;
-			}, 10000);
 		}
+		//Reset boost animation
+		boostReady.style.animation = "none";
+		boostReady.offsetHeight;
+		boostReady.style.animation = null;
+
+		setTimeout(function() {
+			player.boostReady = true;
+		}, 100);
 	}
 });
 
 window.addEventListener("keyup", function(e) {
-	player.updated = true;
 	[87, 38].indexOf(e.keyCode) > -1 ? (player.move[0] = 0) : 0;
 	[68, 39].indexOf(e.keyCode) > -1 ? (player.move[1] = 0) : 0;
 	[83, 40].indexOf(e.keyCode) > -1 ? (player.move[2] = 0) : 0;

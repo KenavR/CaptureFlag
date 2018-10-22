@@ -9,7 +9,7 @@ function Player(ws) {
 	this.move = [0, 0, 0, 0];
 	this.id = Math.random();
 	this.ws = ws;
-	this.moveSpeed = 0.2;
+	this.moveSpeed = .2;
 	this.hasFlag = 0;
 	this.reset();
 	// Added game property to access the required properties that are now in the Game object
@@ -24,9 +24,12 @@ Player.prototype.setPlayedGame = function setPlayedGame(game) {
 Player.prototype.getTeam = function() {
 	var redTeamPlayers = 0;
 	var blueTeamPlayers = 0;
-	for (var i = 0; i < this.game.players.length; i++) {
-		!this.game.players[i].team ? redTeamPlayers++ : blueTeamPlayers++;
+	if (this.game.hasOwnProperty('players')) {
+		for (var i = 0; i < this.game.players.length; i++) {
+			!this.game.players[i].team ? redTeamPlayers++ : blueTeamPlayers++;
+		}
 	}
+	this.team = redTeamPlayers > blueTeamPlayers ? 1 : 0;
 	console.log(redTeamPlayers + ' ' + blueTeamPlayers);
 }
 
@@ -44,8 +47,8 @@ Player.prototype.update = function() {
 	this.x += this.velX;
 	this.y += this.velY;
 
-	this.velX *= 0.97;
-	this.velY *= 0.97;
+	this.velX *= .97;
+	this.velY *= .97;
 };
 
 Player.prototype.reset = function() {
@@ -67,10 +70,12 @@ Player.prototype.reset = function() {
 				this.hasFlag = 0;
 				if (!this.team) {
 					this.game.grids[this.game.blueFlagSpawn].flagMessage(1);
-					this.game.grids[this.game.blueFlagSpawn].flag = 1;
+					// this.game.grids[this.game.blueFlagSpawn].flag = 1;
+					console.log('ded, returning blue flag' + this.hasFlag);
 				} else {
 					this.game.grids[this.game.redFlagSpawn].flagMessage(1);
-					this.game.grids[this.game.redFlagSpawn].flag = 1;
+					// this.game.grids[this.game.redFlagSpawn].flag = 1;
+					console.log('ded, returning red flag' + this.hasFlag);
 				}
 			}
 
@@ -174,6 +179,7 @@ Player.prototype.collision = function() {
 		}
 	}
 };
+
 
 
 

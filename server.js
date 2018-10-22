@@ -9,79 +9,84 @@ const Game = require("./game");
 const Player = require("./player");
 
 function Server() {
-  this.httpServer;
-  this.websocketServer;
+	this.httpServer;
+	this.websocketServer;
 
-  this.games = [];
-  this.init();
+	this.games = [];
+	this.init();
 }
 
 Server.prototype.init = function init() {
-  this.httpServer = express().use(express.static("client"), (req, res) =>
-    res.sendFile(INDEX)
-  );
+	this.httpServer = express().use(express.static("client"), (req, res) =>
+		res.sendFile(INDEX)
+	);
 };
 
 Server.prototype.initWebsocketMessage = function initWebsocketMessage() {
-  function createGame() {
-    function getId() {
-      // Should be replaced with something else, maybe database
-      return Math.random()
-        .toString(36)
-        .substr(2, 9);
-    }
+	function createGame() {
+		function getId() {
+			// Should be replaced with something else, maybe database
+			return Math.random()
+				.toString(36)
+				.substr(2, 9);
+		}
 
-    const game = new Game(getId());
-    game.start();
-    this.games.push(game);
-    return game;
-  }
+		const game = new Game(getId());
+		game.start();
+		this.games.push(game);
+		return game;
+	}
 
-  function getGameWithFreeSlot() {
-    return this.games.find(game => game.hasFreeSlot());
-  }
+	function getGameWithFreeSlot() {
+		return this.games.find(game => game.hasFreeSlot());
+	}
 
-  function close(ws) {
-    /* Not the most efficient way, since it runs on every game - nothing happens if the player is not playing the game */
-    this.games.forEach(game => game.removePlayerByWS(ws));
-  }
+	function close(ws) {
+		/* Not the most efficient way, since it runs on every game - nothing happens if the player is not playing the game */
+		this.games.forEach(game => game.removePlayerByWS(ws));
+		for (var i = 0; i < this.games.length; i++) {
+			this.games[i].players == 0 ? this.games.splice(i, 1) : 0;
+		}
+	}
 
-  function handleMessage(ws, e) {
-    try {
-      var message = JSON.parse(e);
-      if (message && message.hasOwnProperty("gameId")) {
-        var gameId = message.gameId;
-        var game = this.games.find(game => game.id === gameId);
-        if (game && game.isPlayer(ws)) {
-          game.processMessage(message);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
+	function handleMessage(ws, e) {
+		try {
+			var message = JSON.parse(e);
+			if (message && message.hasOwnProperty("gameId")) {
+				var gameId = message.gameId;
+				var game = this.games.find(game => game.id === gameId);
+				if (game && game.isPlayer(ws)) {
+					game.processMessage(message);
+				}
+			}
+		} catch (e) {
+			console.log(e);
+		}
+	}
 
-  this.websocketServer.on("connection", ws => {
-    ws.on("close", close.bind(this, ws));
-    ws.on("error", close.bind(this, ws));
+	this.websocketServer.on("connection", ws => {
+		ws.on("close", close.bind(this, ws));
+		ws.on("error", close.bind(this, ws));
 
-    let activeGame = getGameWithFreeSlot.call(this);
-    /* if no game exists or all games are full, create a new one */
-    if (this.games.length <= 0 || !activeGame) {
-      activeGame = createGame.call(this);
-    }
-    activeGame.addPlayer(new Player(ws));
+		let activeGame = getGameWithFreeSlot.call(this);
+		/* if no game exists or all games are full, create a new one */
+		if (this.games.length <= 0 || !activeGame) {
+			activeGame = createGame.call(this);
+		}
+		activeGame.addPlayer(new Player(ws));
 
-    ws.on("message", handleMessage.bind(this, ws));
-  });
+		ws.on("message", handleMessage.bind(this, ws));
+	});
 };
 
 Server.prototype.start = function start(port = PORT) {
-  this.httpServer = this.httpServer.listen(port, () =>
-    console.log(`Listening on ${port}`)
-  );
-  this.websocketServer = new SocketServer({ server: this.httpServer });
-  this.initWebsocketMessage();
+	this.httpServer = this.httpServer.listen(port, () =>
+  console.log(`Listening on ${port}`)
+	);
+	this.websocketServer = new SocketServer({
+		server: this.httpServer
+	});
+	this.initWebsocketMessage();
 };
 
 module.exports = exports = Server;

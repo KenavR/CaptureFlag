@@ -8,6 +8,7 @@ function Game(id) {
 	this.grids = [];
 	this.redFlagSpawn = -1;
 	this.blueFlagSpawn = -1;
+	this.score = [0, 0];
 	this.init()
 }
 
@@ -73,12 +74,14 @@ Game.prototype.addPlayer = function addPlayer(player) {
 		player: [this.players[index].x, this.players[index].y, this.players[index].id],
 		grids: this.grids.map(grid => Object.assign({}, grid, {
 			game: null
-		}))
+		})),
+		score: this.score,
+		gridRowLength: DEFAULTS.GridRowLength
 	}))
 };
 
 Game.prototype.removePlayerByWS = function removePlayer(ws) {
-	this.players = this.players.filter(p => p.ws !== ws)
+	this.players = this.players.filter(p => p.ws !== ws);
 };
 
 Game.prototype.isPlayer = function isPlayer(ws) {
@@ -97,11 +100,11 @@ Game.prototype.processMessage = function processMessage(message) {
 		this.players[messageIndex].move = message.move
 	} else if (message.type == "boost") {
 		if (!this.players[messageIndex].hasFlag) {
-			this.players[messageIndex].moveSpeed = 0.7;
+			this.players[messageIndex].moveSpeed = 0.8;
 			this.players[messageIndex].velX *= 2;
 			this.players[messageIndex].velY *= 2;
 			setTimeout(function() {
-				this.players[messageIndex].moveSpeed = 0.2
+				this.players[messageIndex].moveSpeed = 0.2;
 			}.bind(this), 500);
 		}
 	}
