@@ -100,11 +100,11 @@ Game.prototype.processMessage = function processMessage(message) {
 		this.players[messageIndex].move = message.move
 	} else if (message.type == "boost") {
 		if (!this.players[messageIndex].hasFlag) {
-			this.players[messageIndex].moveSpeed = 0.8;
+			this.players[messageIndex].moveSpeed = 1;
 			this.players[messageIndex].velX *= 2;
 			this.players[messageIndex].velY *= 2;
 			setTimeout(function() {
-				this.players[messageIndex].moveSpeed = 0.2;
+				this.players[messageIndex].moveSpeed = 0.45;
 			}.bind(this), 500);
 		}
 	}
@@ -116,7 +116,7 @@ Game.prototype.start = function start() {
 			var minimizedPlayers = [];
 			for (var i = 0; i < this.players.length; i++) {
 				this.players[i].update();
-				minimizedPlayers.push([this.players[i].x.toFixed(2), this.players[i].y.toFixed(2), this.players[i].team, this.players[i].velX, this.players[i].velY]);
+				minimizedPlayers.push([this.players[i].x, this.players[i].y, this.players[i].team, this.players[i].velX, this.players[i].velY]);
 
 				if (this.players[i].hasFlag) {
 					minimizedPlayers[minimizedPlayers.length - 1].push(this.players[i].hasFlag)

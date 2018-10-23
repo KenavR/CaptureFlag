@@ -58,9 +58,9 @@ var player = {
 
 //x, y, oldVelX, oldVelY, newVelX, newVelY
 var oldPlayersPos = [
-	[25, 25, 0, 0, 0, 0],
 	[0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0],
 	[0, 0, 0, 0],
 	[0, 0, 0, 0],
 	[0, 0, 0, 0],
@@ -78,10 +78,9 @@ var updateMessage;
 
 
 
-
+var test = true;
 ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
-
 	if (message.type == "gameUpdate") {
 		updateMessage = JSON.parse(e.data);
 
@@ -89,18 +88,18 @@ ws.onmessage = function(e) {
 		player.x = Number(message.x);
 		player.y = Number(message.y);
 
+		for (var i = 0; i < updateMessage.players.length; i++) {
+			//Set new velX/velY
+			oldPlayersPos[i][4] = message.players[0][3];
+			oldPlayersPos[i][5] = message.players[0][4];
 
+			if (test) {
+				test = false;
+				oldPlayersPos[i][2] = oldPlayersPos[i][4];
+				oldPlayersPos[i][3] = oldPlayersPos[i][5];
+			}
 
-
-		//Set new velX/velY
-		oldPlayersPos[0][4] = message.players[0][3];
-		oldPlayersPos[0][5] = message.players[0][4];
-
-		oldPlayersPos[0][2] = oldPlayersPos[0][4];
-		oldPlayersPos[0][3] = oldPlayersPos[0][5];
-
-
-
+		}
 
 		//Determine which grids are in viewport range
 		player.currentGrid = Math.floor(player.cameraX / 100) + Math.floor(player.cameraY / 100) * gridRowLength;
@@ -137,18 +136,15 @@ ws.onmessage = function(e) {
 
 
 
-		oldPlayersPos[0][2] = Number(message.player[0]);
-		oldPlayersPos[0][3] = Number(message.player[1]);
 
 
 
 		gridRowLength = message.gridRowLength;
 
 		console.log('AYYY THIS BOI JUST JOIN');
-		requestAnimationFrame(smoothDraw);
+		requestAnimationFrame(smoothDraw)
 	}
 };
-
 
 
 
@@ -161,8 +157,8 @@ function smoothDraw() {
 	try {
 		ctx.clearRect(player.cameraX - 25 - canvas.width / 2, player.cameraY - 25 - canvas.height / 2, canvas.width + 50, canvas.height + 50);
 		//Move camera view to center with player
-		var moveCameraX = (player.x - player.cameraX) * .2;
-		var moveCameraY = (player.y - player.cameraY) * .2;
+		var moveCameraX = (player.x - player.cameraX) * .15;
+		var moveCameraY = (player.y - player.cameraY) * .15;
 		player.cameraX += moveCameraX;
 		player.cameraY += moveCameraY;
 
@@ -185,81 +181,37 @@ function smoothDraw() {
 
 
 
-		// Hermite Spline? =[
-		let p0 = [oldPlayersPos[0][0], oldPlayersPos[0][1]];
-		let v0 = [oldPlayersPos[0][2], oldPlayersPos[0][3]];
 
-		let p1 = [player.x, player.y];
-		let v1 = [oldPlayersPos[0][4], oldPlayersPos[0][5]];
-
-		let shadow = cubicHermite(p0, v0, p1, v1, 20 / 60);
-		let dShadow = dcubicHermite(p0, v0, p1, v1, 20 / 60);
-
-
-		oldPlayersPos[0][0] = shadow[0];
-		oldPlayersPos[0][1] = shadow[1];
-		oldPlayersPos[0][2] = dShadow[0];
-		oldPlayersPos[0][3] = dShadow[1];
-
-
-
-		function cubicHermite(p0, v0, p1, v1, t, f) {
-			let ti = t - 1,
-				t2 = t * t,
-				ti2 = ti * ti,
-				h00 = (1 + 2 * t) * ti2,
-				h10 = t * ti2,
-				h01 = t2 * (3 - 2 * t),
-				h11 = t2 * ti;
-			if (p0.length) {
-				if (!f) {
-					f = new Array(p0.length);
-				}
-				for (let i = p0.length - 1; i >= 0; --i) {
-					f[i] = h00 * p0[i] + h10 * v0[i] + h01 * p1[i] + h11 * v1[i];
-				}
-				return f;
-			}
-			return h00 * p0 + h10 * v0 + h01 * p1 + h11 * v1;
-		};
-
-		function dcubicHermite(p0, v0, p1, v1, t, f) {
-			var dh00 = 6 * t * t - 6 * t,
-				dh10 = 3 * t * t - 4 * t + 1,
-				dh01 = -6 * t * t + 6 * t,
-				dh11 = 3 * t * t - 2 * t;
-			if (p0.length) {
-				if (!f) {
-					f = new Array(p0.length);
-				}
-				for (var i = p0.length - 1; i >= 0; --i) {
-					f[i] = dh00 * p0[i] + dh10 * v0[i] + dh01 * p1[i] + dh11 * v1[i];
-				}
-				return f;
-			}
-			return dh00 * p0 + dh10 * v0 + dh01 * p1[i] + dh11 * v1;
-		};
 
 		//Draw and smooth player's movements
-		// for (var i = 0; i < updateMessage.players.length; i++) {
-		// 	var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) * .4;
-		// 	var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) * .4;
-
-		// 	oldPlayersPos[i][0] += movePlayerX;
-		// 	oldPlayersPos[i][1] += movePlayerY;
-
-		drawPlayer(oldPlayersPos[0][0], oldPlayersPos[0][1], updateMessage.players[0][2], updateMessage.players[0][3]);
-		// }
-		// }
+		for (var i = 0; i < updateMessage.players.length; i++) {
 
 
 
+			// Hermite Spline? =[
+			let p0 = [oldPlayersPos[i][0], oldPlayersPos[i][1]];
+			let v0 = [oldPlayersPos[i][2], oldPlayersPos[i][3]];
+
+			let p1 = [updateMessage.players[i][0], updateMessage.players[i][1]];
+			let v1 = [oldPlayersPos[i][4], oldPlayersPos[i][5]];
 
 
+			let shadow = cubicHermite(p0, v0, p1, v1, 15 / 60);
+			let dShadow = dcubicHermite(p0, v0, p1, v1, 15 / 60);
 
 
+			oldPlayersPos[i][0] = shadow[0];
+			oldPlayersPos[i][1] = shadow[1];
+			oldPlayersPos[i][2] = dShadow[0];
+			oldPlayersPos[i][3] = dShadow[1];
 
+			// var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) / 3;
+			// var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) / 3;
 
+			// oldPlayersPos[i][0] += movePlayerX;
+			// oldPlayersPos[i][1] += movePlayerY;
+			drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], updateMessage.players[i][2], updateMessage.players[i][5]);
+		}
 		requestAnimationFrame(smoothDraw);
 
 	} catch (e) {
@@ -288,6 +240,7 @@ function Background() {
 // }
 
 function drawPlayer(x, y, team, flag) {
+
 	if (!team) {
 		ctx.drawImage(images[7], x - 55, y - 55, 110, 110);
 		flag ? ctx.drawImage(images[10], x - 45, y - 45, 90, 90) : 0;
@@ -317,6 +270,59 @@ function drawGrids(x, y, type, flag) {
 		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[9], x - 25, y - 20, 150, 150) : ctx.drawImage(images[10], x - 25, y - 25, 150, 150);
 	}
 }
+
+
+
+
+
+
+
+
+
+function cubicHermite(p0, v0, p1, v1, t, f) {
+	let ti = t - 1,
+		t2 = t * t,
+		ti2 = ti * ti,
+		h00 = (1 + 2 * t) * ti2,
+		h10 = t * ti2,
+		h01 = t2 * (3 - 2 * t),
+		h11 = t2 * ti;
+	if (p0.length) {
+		if (!f) {
+			f = new Array(p0.length);
+		}
+		for (let i = p0.length - 1; i >= 0; --i) {
+			f[i] = h00 * p0[i] + h10 * v0[i] + h01 * p1[i] + h11 * v1[i];
+		}
+		return f;
+	}
+	return h00 * p0 + h10 * v0 + h01 * p1 + h11 * v1;
+};
+
+function dcubicHermite(p0, v0, p1, v1, t, f) {
+	var dh00 = 6 * t * t - 6 * t,
+		dh10 = 3 * t * t - 4 * t + 1,
+		dh01 = -6 * t * t + 6 * t,
+		dh11 = 3 * t * t - 2 * t;
+	if (p0.length) {
+		if (!f) {
+			f = new Array(p0.length);
+		}
+		for (var i = p0.length - 1; i >= 0; --i) {
+			f[i] = dh00 * p0[i] + dh10 * v0[i] + dh01 * p1[i] + dh11 * v1[i];
+		}
+		return f;
+	}
+	return dh00 * p0 + dh10 * v0 + dh01 * p1[i] + dh11 * v1;
+};
+
+
+
+
+
+
+
+
 
 window.addEventListener("keydown", function(e) {
 

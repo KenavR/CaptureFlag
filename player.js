@@ -9,7 +9,7 @@ function Player(ws) {
 	this.move = [0, 0, 0, 0];
 	this.id = Math.random();
 	this.ws = ws;
-	this.moveSpeed = .2;
+	this.moveSpeed = .45;
 	this.hasFlag = 0;
 	this.reset();
 	// Added game property to access the required properties that are now in the Game object
@@ -35,11 +35,11 @@ Player.prototype.getTeam = function() {
 
 Player.prototype.update = function() {
 	this.collision();
-	if (this.velX < 15 && this.velX > -15) {
+	if (this.velX < 12 && this.velX > -12) {
 		this.move[3] ? (this.velX -= this.moveSpeed) : 0;
 		this.move[1] ? (this.velX += this.moveSpeed) : 0;
 	}
-	if (this.velY < 15 && this.velY > -15) {
+	if (this.velY < 12 && this.velY > -12) {
 		this.move[0] ? (this.velY -= this.moveSpeed) : 0;
 		this.move[2] ? (this.velY += this.moveSpeed) : 0;
 	}
@@ -150,10 +150,10 @@ Player.prototype.collision = function() {
 					var collide = circRectCollision(this, this.game.grids[collideGrids[i]]);
 
 					if (collide) {
-						this.game.grids[collideGrids[i]].type == 4.1 ? this.velY -= .4 :
-							this.game.grids[collideGrids[i]].type == 4.2 ? this.velX += .4 :
-							this.game.grids[collideGrids[i]].type == 4.3 ? this.velY += .4 :
-							this.game.grids[collideGrids[i]].type == 4.4 ? this.velX -= .4 : 0;
+						this.game.grids[collideGrids[i]].type == 4.1 ? this.velY -= .6 :
+							this.game.grids[collideGrids[i]].type == 4.2 ? this.velX += .6 :
+							this.game.grids[collideGrids[i]].type == 4.3 ? this.velY += .6 :
+							this.game.grids[collideGrids[i]].type == 4.4 ? this.velX -= .6 : 0;
 					}
 				}
 			}
