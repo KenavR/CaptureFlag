@@ -35,11 +35,11 @@ Player.prototype.getTeam = function() {
 
 Player.prototype.update = function() {
 	this.collision();
-	if (this.velX < 50 && this.velX > -50) {
+	if (this.velX < 15 && this.velX > -15) {
 		this.move[3] ? (this.velX -= this.moveSpeed) : 0;
 		this.move[1] ? (this.velX += this.moveSpeed) : 0;
 	}
-	if (this.velY < 50 && this.velY > -50) {
+	if (this.velY < 15 && this.velY > -15) {
 		this.move[0] ? (this.velY -= this.moveSpeed) : 0;
 		this.move[2] ? (this.velY += this.moveSpeed) : 0;
 	}
@@ -47,8 +47,8 @@ Player.prototype.update = function() {
 	this.x += this.velX;
 	this.y += this.velY;
 
-	this.velX *= 1;
-	this.velY *= 1;
+	this.velX *= .97;
+	this.velY *= .97;
 };
 
 Player.prototype.reset = function() {

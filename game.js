@@ -100,7 +100,7 @@ Game.prototype.processMessage = function processMessage(message) {
 		this.players[messageIndex].move = message.move
 	} else if (message.type == "boost") {
 		if (!this.players[messageIndex].hasFlag) {
-			this.players[messageIndex].moveSpeed = 1;
+			this.players[messageIndex].moveSpeed = 1.2;
 			this.players[messageIndex].velX *= 2;
 			this.players[messageIndex].velY *= 2;
 			setTimeout(function() {
