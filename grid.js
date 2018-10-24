@@ -41,7 +41,6 @@ Grid.prototype.flagMessage = function(flag, score) {
 	var currentGrid = Math.floor(this.x / 100) + Math.floor(this.y / 100) * DEFAULTS.GridRowLength;
 	for (var i = 0; i < this.game.players.length; i++) {
 		if (this.game.players[i].ws.readyState === this.game.players[i].ws.OPEN) {
-			console.log('FLAGGG ' + flag);
 			flag == 0 || flag == 1 ? this.flag = flag : 0;
 
 			this.game.players[i].ws.send(
@@ -52,8 +51,6 @@ Grid.prototype.flagMessage = function(flag, score) {
 					score: score
 				})
 			);
-		} else {
-			console.log("player readystaet not open? huh?");
 		}
 	}
 };

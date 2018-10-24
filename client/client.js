@@ -11,14 +11,17 @@ var ctx = canvas.getContext("2d");
 window.addEventListener("resize", function() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
+	arrowDist = Math.min(canvas.width / 2, canvas.height / 2);
 });
 
+var arrowDist = Math.min(canvas.width / 2, canvas.height / 2);
 var keyStates = [];
 var grids = [];
 var gridRowLength;
 var boostReady = document.getElementById("boost");
 var redGainedPoint = document.getElementById("redGainedPoint");
 var blueGainedPoint = document.getElementById("blueGainedPoint");
+var updateMessage;
 
 var currentGameId = null;
 
@@ -69,8 +72,16 @@ var oldPlayersPos = [
 	[0, 0, 0, 0, 0, 0],
 	[0, 0, 0, 0, 0, 0]
 ];
-var updateMessage;
 
+var redFlag = {
+	gridIndex: 0,
+	captured: null
+}
+
+var blueFlag = {
+	gridIndex: 0,
+	captured: null
+}
 
 
 
@@ -83,8 +94,6 @@ ws.onmessage = function(e) {
 	var message = JSON.parse(e.data);
 	if (message.type == "gameUpdate") {
 		frame = 1;
-		console.log('-------');
-		startDate = new Date();
 		updateMessage = JSON.parse(e.data);
 
 		currentGameId = !currentGameId && message.gameId ? message.gameId : currentGameId;
@@ -97,7 +106,6 @@ ws.onmessage = function(e) {
 			oldPlayersPos[i][5] = message.players[i][4];
 
 			if (test) {
-				console.log(player.x);
 				test = false;
 				oldPlayersPos[i][2] = oldPlayersPos[i][4];
 				oldPlayersPos[i][3] = oldPlayersPos[i][5];
@@ -113,6 +121,10 @@ ws.onmessage = function(e) {
 
 	} else if (message.type == "flagUpdate") {
 		grids[message.index].flag = message.hasFlag;
+		if (message.hasFlag) {
+			redFlag.gridIndex == message.index ? redFlag.captured = null : blueFlag.captured = null;
+		}
+
 		if (message.hasOwnProperty('score')) {
 			if (message.score[0]) {
 				document.getElementById('redScore').innerHTML++;
@@ -139,7 +151,11 @@ ws.onmessage = function(e) {
 
 		gridRowLength = message.gridRowLength;
 
-		console.log('AYYY THIS BOI JUST JOIN');
+		for (var i = 0; i < grids.length; i++) {
+			if (grids[i].hasOwnProperty('flag')) {
+				!redFlag.gridIndex ? redFlag.gridIndex = i : blueFlag.gridIndex = i;
+			}
+		}
 		requestAnimationFrame(smoothDraw)
 	}
 };
@@ -158,12 +174,13 @@ function smoothDraw() {
 			ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
 			ctx.clearRect(player.cameraX - 25 - canvas.width / 2, player.cameraY - 25 - canvas.height / 2, canvas.width + 50, canvas.height + 50);
 			//Move camera view to center with player
-			var moveCameraX = (player.x - player.cameraX) * .10;
-			var moveCameraY = (player.y - player.cameraY) * .10;
+			var moveCameraX = (player.x - player.cameraX) * .1;
+			var moveCameraY = (player.y - player.cameraY) * .1;
 			player.cameraX += moveCameraX;
 			player.cameraY += moveCameraY;
 
-			Background();
+			drawBackground();
+			drawArrows();
 
 			// Draw all grids in viewport range
 			for (var i = player.viewStartGrid; i < player.viewEndGrid; i++) {
@@ -175,6 +192,15 @@ function smoothDraw() {
 
 			//Draw and smooth player's movements
 			for (var i = 0; i < updateMessage.players.length; i++) {
+
+				if (updateMessage.players[i][5]) {
+					if (!updateMessage.players[i][2]) {
+						blueFlag.captured = i;
+						console.log(blueFlag.captured);
+					} else {
+						redFlag.captured = i;
+					}
+				}
 
 				// Hermite Spline? =[
 				let p0 = [oldPlayersPos[i][0], oldPlayersPos[i][1]];
@@ -191,9 +217,6 @@ function smoothDraw() {
 				oldPlayersPos[i][2] = dShadow[0];
 				oldPlayersPos[i][3] = dShadow[1];
 
-				endDate = new Date();
-				var seconds = (endDate.getTime() - startDate.getTime());
-				console.log(dShadow + ' ' + seconds);
 				// Below is linear interpolation
 				// var movePlayerX = (updateMessage.players[i][0] - oldPlayersPos[i][0]) / 4;
 				// var movePlayerY = (updateMessage.players[i][1] - oldPlayersPos[i][1]) / 4;
@@ -201,7 +224,7 @@ function smoothDraw() {
 				// oldPlayersPos[i][0] += movePlayerX;
 				// oldPlayersPos[i][1] += movePlayerY;
 
-				drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], updateMessage.players[i][2], updateMessage.players[i][5]);
+				drawPlayer(oldPlayersPos[i][0], oldPlayersPos[i][1], updateMessage.players[i][2], updateMessage.players[i][5], i);
 				//Below draws where server target is
 				// drawPlayer(updateMessage.players[i][0], updateMessage.players[i][1], 0, 0);
 			}
@@ -221,25 +244,18 @@ function smoothDraw() {
 
 
 
-function Background() {
+function drawBackground() {
 	ctx.fillStyle = ctx.createPattern(background, 'repeat');
 	ctx.fillRect(player.cameraX - (canvas.width / 2), player.cameraY - (canvas.height / 2), canvas.width, canvas.height);
 }
 
-// function drawImageLookat(img, x, y, lookx, looky) {
-// 	ctx.setTransform(1, 0, 0, 1, x, y); // set scale and origin
-// 	ctx.rotate(Math.atan2(looky - y, lookx - x)); // set angle
-// 	ctx.drawImage(img, -img.width / 2, -img.height / 2); // draw image
-// 	ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default not needed if you use setTransform for other rendering operations
-// }
-
 function drawPlayer(x, y, team, flag) {
-
 	if (!team) {
 		ctx.drawImage(images[7], x - 55, y - 55, 110, 110);
 		flag ? ctx.drawImage(images[10], x - 45, y - 45, 90, 90) : 0;
 	} else if (team) {
 		ctx.drawImage(images[8], x - 55, y - 55, 110, 110);
+
 		flag ? ctx.drawImage(images[9], x - 45, y - 45, 90, 90) : 0;
 	}
 }
@@ -262,6 +278,55 @@ function drawGrids(x, y, type, flag) {
 	//Flag
 	if (flag) {
 		x > Math.round(gridRowLength * 100 / 2) ? ctx.drawImage(images[9], x - 25, y - 20, 150, 150) : ctx.drawImage(images[10], x - 25, y - 25, 150, 150);
+	}
+}
+
+function drawArrows() {
+	try {
+		if (redFlag.captured === null) {
+			var angleRedFlag = Math.atan2(grids[redFlag.gridIndex].y + 50 - player.cameraY, grids[redFlag.gridIndex].x + 50 - player.cameraX);
+			var redFlagDist = Math.sqrt((grids[redFlag.gridIndex].x + 50 - player.cameraX) * (grids[redFlag.gridIndex].x + 50 - player.cameraX) + (grids[redFlag.gridIndex].y + 50 - player.cameraY) * (grids[redFlag.gridIndex].y + 50 - player.cameraY));
+		} else {
+			var angleRedFlag = Math.atan2(updateMessage.players[redFlag.captured][1] - player.cameraY, updateMessage.players[redFlag.captured][0] - player.cameraX);
+			var redFlagDist = Math.sqrt((updateMessage.players[redFlag.captured][0] - player.cameraX) * (updateMessage.players[redFlag.captured][0] - player.cameraX) + (updateMessage.players[redFlag.captured][1] - player.cameraY) * (updateMessage.players[redFlag.captured][1] - player.cameraY));
+		}
+
+		if (blueFlag.captured === null) {
+			var angleBlueFlag = Math.atan2(grids[blueFlag.gridIndex].y + 50 - player.cameraY, grids[blueFlag.gridIndex].x + 50 - player.cameraX);
+			var blueFlagDist = Math.sqrt((grids[blueFlag.gridIndex].x + 50 - player.cameraX) * (grids[blueFlag.gridIndex].x + 50 - player.cameraX) + (grids[blueFlag.gridIndex].y + 50 - player.cameraY) * (grids[blueFlag.gridIndex].y + 50 - player.cameraY));
+		} else {
+			var angleBlueFlag = Math.atan2(updateMessage.players[blueFlag.captured][1] - player.cameraY, updateMessage.players[blueFlag.captured][0] - player.cameraX);
+			var blueFlagDist = Math.sqrt((updateMessage.players[blueFlag.captured][0] - player.cameraX) * (updateMessage.players[blueFlag.captured][0] - player.cameraX) + (updateMessage.players[blueFlag.captured][1] - player.cameraY) * (updateMessage.players[blueFlag.captured][1] - player.cameraY));
+		}
+
+		if (arrowDist < redFlagDist) {
+			var opacity = redFlag.captured === null ? .25 : .9;
+
+			ctx.translate(player.cameraX, player.cameraY);
+			ctx.rotate(angleRedFlag);
+			ctx.beginPath();
+			ctx.lineTo(arrowDist - 30, -15);
+			ctx.lineTo(arrowDist, 0);
+			ctx.lineTo(arrowDist - 30, 15);
+			ctx.fillStyle = "rgba(255, 0, 0," + opacity + ")";
+			ctx.fill();
+			ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
+		}
+		if (arrowDist < blueFlagDist) {
+			var opacity = blueFlag.captured === null ? .25 : .9;
+
+			ctx.translate(player.cameraX, player.cameraY);
+			ctx.rotate(angleBlueFlag);
+			ctx.beginPath();
+			ctx.lineTo(arrowDist - 30, -15);
+			ctx.lineTo(arrowDist, 0);
+			ctx.lineTo(arrowDist - 30, 15);
+			ctx.fillStyle = "rgba(0, 0, 255," + opacity + ")";
+			ctx.fill();
+			ctx.setTransform(1, 0, 0, 1, -player.cameraX + canvas.width / 2, -player.cameraY + canvas.height / 2);
+		}
+	} catch (e) {
+		console.log(e);
 	}
 }
 
@@ -356,7 +421,6 @@ window.addEventListener("keydown", function(e) {
 		boostReady.style.animation = "none";
 		boostReady.offsetHeight;
 		boostReady.style.animation = null;
-
 		setTimeout(function() {
 			player.boostReady = true;
 		}, 100);

@@ -9,7 +9,8 @@ function Player(ws) {
 	this.move = [0, 0, 0, 0];
 	this.id = Math.random();
 	this.ws = ws;
-	this.moveSpeed = .45;
+	this.moveSpeed = .5;
+	this.maxMoveSpeed = 12;
 	this.hasFlag = 0;
 	this.reset();
 	// Added game property to access the required properties that are now in the Game object
@@ -35,11 +36,11 @@ Player.prototype.getTeam = function() {
 
 Player.prototype.update = function() {
 	this.collision();
-	if (this.velX < 15 && this.velX > -15) {
+	if (this.velX < this.maxMoveSpeed && this.velX > -this.maxMoveSpeed) {
 		this.move[3] ? (this.velX -= this.moveSpeed) : 0;
 		this.move[1] ? (this.velX += this.moveSpeed) : 0;
 	}
-	if (this.velY < 15 && this.velY > -15) {
+	if (this.velY < this.maxMoveSpeed && this.velY > -this.maxMoveSpeed) {
 		this.move[0] ? (this.velY -= this.moveSpeed) : 0;
 		this.move[2] ? (this.velY += this.moveSpeed) : 0;
 	}
@@ -61,7 +62,7 @@ Player.prototype.reset = function() {
 			for (var i = 0; i < this.game.map.length; i++) {
 				if (this.game.map[i] == 8 && this.team == 0) {
 					spawnPoints.push(i);
-				} else if (this.game.map[i] == 9 && this.team == 1) {
+				} else if (this.game.map[i] == 8 && this.team == 1) {
 					spawnPoints.push(i);
 				}
 			}
@@ -70,11 +71,9 @@ Player.prototype.reset = function() {
 				this.hasFlag = 0;
 				if (!this.team) {
 					this.game.grids[this.game.blueFlagSpawn].flagMessage(1);
-					// this.game.grids[this.game.blueFlagSpawn].flag = 1;
 					console.log('ded, returning blue flag' + this.hasFlag);
 				} else {
 					this.game.grids[this.game.redFlagSpawn].flagMessage(1);
-					// this.game.grids[this.game.redFlagSpawn].flag = 1;
 					console.log('ded, returning red flag' + this.hasFlag);
 				}
 			}
@@ -150,10 +149,10 @@ Player.prototype.collision = function() {
 					var collide = circRectCollision(this, this.game.grids[collideGrids[i]]);
 
 					if (collide) {
-						this.game.grids[collideGrids[i]].type == 4.1 ? this.velY -= .6 :
-							this.game.grids[collideGrids[i]].type == 4.2 ? this.velX += .6 :
-							this.game.grids[collideGrids[i]].type == 4.3 ? this.velY += .6 :
-							this.game.grids[collideGrids[i]].type == 4.4 ? this.velX -= .6 : 0;
+						this.game.grids[collideGrids[i]].type == 4.1 ? this.velY -= .7 :
+							this.game.grids[collideGrids[i]].type == 4.2 ? this.velX += .7 :
+							this.game.grids[collideGrids[i]].type == 4.3 ? this.velY += .7 :
+							this.game.grids[collideGrids[i]].type == 4.4 ? this.velX -= .7 : 0;
 					}
 				}
 			}
@@ -251,7 +250,7 @@ function circRectCollision(player, rect) {
 	// also test for corner collisions
 	var dx = distX - 100 / 2;
 	var dy = distY - 100 / 2;
-	return dx * dx + dy * dy <= 18 * 18;
+	return dx * dx + dy * dy <= 20 * 20;
 }
 
 
