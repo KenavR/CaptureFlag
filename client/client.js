@@ -423,7 +423,7 @@ window.addEventListener("keydown", function(e) {
 		boostReady.style.animation = null;
 		setTimeout(function() {
 			player.boostReady = true;
-		}, 100);
+		}, 10000);
 	}
 });
 

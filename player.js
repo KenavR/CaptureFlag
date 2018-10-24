@@ -62,7 +62,7 @@ Player.prototype.reset = function() {
 			for (var i = 0; i < this.game.map.length; i++) {
 				if (this.game.map[i] == 8 && this.team == 0) {
 					spawnPoints.push(i);
-				} else if (this.game.map[i] == 8 && this.team == 1) {
+				} else if (this.game.map[i] == 9 && this.team == 1) {
 					spawnPoints.push(i);
 				}
 			}
