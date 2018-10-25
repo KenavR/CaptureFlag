@@ -156,9 +156,12 @@ ws.onmessage = function(e) {
 				!redFlag.gridIndex ? redFlag.gridIndex = i : blueFlag.gridIndex = i;
 			}
 		}
-		requestAnimationFrame(smoothDraw)
+		window.onload = function() {
+			requestAnimationFrame(smoothDraw);
+		}
 	}
 };
+
 
 
 
@@ -409,6 +412,17 @@ window.addEventListener("keydown", function(e) {
 	if (e.keyCode == 32) {
 		if (player.boostReady) {
 			player.boostReady = false;
+
+
+			//Reset boost animation
+			boostReady.style.animation = "none";
+			boostReady.offsetHeight;
+			boostReady.style.animation = null;
+			console.log('bewst');
+			setTimeout(function() {
+				player.boostReady = true;
+			}, 10000);
+
 			ws.send(
 				JSON.stringify({
 					gameId: currentGameId,
@@ -417,13 +431,7 @@ window.addEventListener("keydown", function(e) {
 				})
 			);
 		}
-		//Reset boost animation
-		boostReady.style.animation = "none";
-		boostReady.offsetHeight;
-		boostReady.style.animation = null;
-		setTimeout(function() {
-			player.boostReady = true;
-		}, 10000);
+
 	}
 });
 
